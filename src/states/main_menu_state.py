@@ -2,6 +2,7 @@ import pygame as pg
 from .state_base import State
 from config.colors import *
 from config.game_settings import GAME_TITLE
+from utils.save_system import load_game
 
 class MainMenuState(State):
     def __init__(self):
@@ -23,7 +24,7 @@ class MainMenuState(State):
                         if self.selected_option == 0:
                             return ["CHANGE_STATE", "character_creation"]
                         elif self.selected_option == 1:
-                            return ["LOAD_GAME"]
+                            return self.load_existing_game()
 
     def draw(self, screen):
         # Draw the main menu on the screen
@@ -39,3 +40,8 @@ class MainMenuState(State):
             text = self.font.render(option, True, text_color)
             text_rect = text.get_rect(center=(screen.get_width() // 2, 200 + i * 50))
             screen.blit(text, text_rect)
+
+    def load_existing_game(self):
+        game = load_game()
+        if game is not None:
+            return ["LOAD_DATA", game]

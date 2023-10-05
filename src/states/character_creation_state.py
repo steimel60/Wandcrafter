@@ -1,8 +1,12 @@
 import pygame as pg
 from .state_base import State
+from .gameplay_state import GameplayState
 from entities.player_entity import PlayerEntitiy
 from items.wand import Wand, WandCore, WandLength, WandWood
 from config.colors import *
+from pathlib import Path
+from config.directories import USER_GAME_DIR
+from utils.save_system import save_game_data, load_game_data
 
 class CharacterCreationState(State):
     def __init__(self):
@@ -38,7 +42,7 @@ class CharacterCreationState(State):
                     case pg.K_RETURN:
                         selection = list(self.options.keys())[self.current_attr]
                         if selection == "Start Game":
-                            return ["NEW_GAME", self.make_player()]
+                            return ["LOAD_DATA", self.make_player(), "NEW_GAME"]
                         elif selection == "Back":
                             return ["CHANGE_STATE", "main_menu"]
 

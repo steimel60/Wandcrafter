@@ -17,3 +17,5 @@ MUSIC_DIR = ASSET_DIR / "music"
 USER_HOME_DIR = Path().home() # On windows C:/Users/user
 USER_DOCS_DIR = USER_HOME_DIR / "Documents"
 USER_GAME_DIR = USER_DOCS_DIR / GAME_TITLE
+
+USER_GAME_DIR.mkdir(parents=True, exist_ok=True)

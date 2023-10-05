@@ -2,7 +2,6 @@ import pygame as pg
 from config.game_settings import GAME_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from config.colors import GREEN
 from states.state_manager import StateManager
-from utils.data_manager import DataManager
 
 class GameManager:
     def __init__(self) -> None:
@@ -17,7 +16,6 @@ class GameManager:
         pg.key.set_repeat(250,100) # Call multiple KEYDOWN events when held (maybe move to state func)
         # GAME INIT
         self.state_manager = StateManager()
-        self.game_data = DataManager()
 
     def run(self):
         running = True
@@ -28,16 +26,7 @@ class GameManager:
             self.clock.tick(FPS)
 
     def events(self):
-        response = self.state_manager.handle_events(pg.event.get())
-        match response:
-            case ["NEW_GAME", player_data]:
-                self.game_data.create_new_game(player_data)
-                self.state_manager.set_game_data(self.game_data)
-                self.state_manager.change_state("gameplay")
-            case ["LOAD_GAME"]:
-                self.game_data.load_game()
-                self.state_manager.set_game_data(self.game_data)
-                self.state_manager.change_state("gameplay")
+        self.state_manager.handle_events(pg.event.get())
 
     def update(self):
         pass

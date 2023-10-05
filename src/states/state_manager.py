@@ -8,6 +8,7 @@ class StateManager:
     """Manages which state the game is currently in and all functions
     regarding game state. """
     def __init__(self) -> None:
+    
         self.state_dict = {
             'gameplay' : GameplayState(),
             'main_menu' : MainMenuState(),
@@ -21,19 +22,24 @@ class StateManager:
             sys.exit()
         response = self.state_dict[self.current_state].update(events)
         match response:
-            case ["CHANGE_STATE", new_state]: self.change_state(new_state)
-            case ["NEW_GAME", player]: return ["NEW_GAME", player]
-            case ["LOAD_GAME"]: return ["LOAD_GAME"]
+            case ["CHANGE_STATE", new_state, *tags]: self.change_state(new_state, tags)
+            case ["LOAD_DATA", data, *tags]: self.load_data(data, tags)
+            case _: pass
 
     def draw(self, screen):
         self.state_dict[self.current_state].draw(screen)
-    
-    def change_state(self, new_state):
+
+    def new_game(self, player):
+        self.state_dict["gameplay"].new_game(player)
+        self.change_state("gameplay")
+
+    def load_data(self, data, tags = None):
+        self.state_dict["gameplay"].load_data(data, tags)
+        self.change_state("gameplay")
+
+    def change_state(self, new_state, tags = None):
         """Change the current game state."""
         if new_state in self.state_dict:
             self.current_state = new_state
         else:
             print(f"Error: State '{new_state}' not found.")
-
-    def set_game_data(self, game_data):
-        self.state_dict["gameplay"].set_game_data(game_data)
