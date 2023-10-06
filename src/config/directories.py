@@ -10,6 +10,7 @@ CONFIG_DIR = SOURCE_DIR / "config"
 # ASSET DIRS
 IMAGE_DIR = ASSET_DIR / "images"
 ANIM_DIR = ASSET_DIR / "animations"
+MAP_DIR = ASSET_DIR / "maps"
 CLOTHES_DIR = IMAGE_DIR / "clothing"
 FONT_DIR = ASSET_DIR / "fonts"
 MUSIC_DIR = ASSET_DIR / "music"

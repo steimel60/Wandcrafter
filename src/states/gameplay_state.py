@@ -2,19 +2,19 @@ from pathlib import Path
 from .state_base import State
 from config.colors import *
 from config.directories import USER_GAME_DIR
-from utils.save_system import save_game_data, load_game
+from utils.save_system import save_game_data
 
 # CLASSES FOR LOAD MACTH STATEMENT
 from entities.player_entity import PlayerEntitiy
+from maps.map import TiledMap
 
 class GameplayState(State):
-    def __init__(self, path = None, player = None,
-                g_data = {"map":"test"}, q_data = None): 
+    def __init__(self, path = None, player = None, map = None): 
         super().__init__()
         self.FILE_PATH = path
         self.player = player
-        self.game_data = g_data
-        self.quest_data = q_data
+        self.map = map
+        self.save_data = dict()
 
     def handle_events(self, events):
         self.player.handle_events(events)
@@ -26,6 +26,7 @@ class GameplayState(State):
     def draw(self, screen):
         # Draw the gameplay on the screen
         screen.fill(MYSTIC_BLUE)
+        self.map.draw(screen)
         self.player.draw(screen)
 
     def set_filepath(self, new_path: Path):
@@ -40,24 +41,27 @@ class GameplayState(State):
     def set_quest_data(self, quest_data):
         self.quest_data = quest_data
 
-    def open_map(self, level):
-        self.game_data["map"] = level
+    def open_map(self, map_name):
+        self.map = TiledMap(map_name)
 
     def load_data(self, data, tags):
         match data:
-            case GameplayState():
-                self.load_game_state(data)
             case PlayerEntitiy():
                 self.new_game(data) if "NEW_GAME" in tags else self.load_player(data)
-    
-    def load_game_state(self, loaded_state):
-        self.set_filepath(loaded_state.FILE_PATH)
-        self.set_player(loaded_state.player)
-        self.set_game_data(loaded_state.game_data)
-        self.set_quest_data(loaded_state.quest_data)
+            case _: self.load_game(data)
 
     def load_player(self, player):
         self.set_player(player)
+
+    def load_game(self, save_dict):
+        player = PlayerEntitiy(
+            name = save_dict["player_data"]["name"],
+            wand = save_dict["player_data"]["wand"],
+            coord = save_dict["player_data"]["coord"]
+        )
+        self.set_player(player)
+        self.open_map(save_dict["map"])
+        self.set_filepath(save_dict["file_path"])
 
     def new_game(self, player):
         self.set_player(player)
@@ -72,4 +76,9 @@ class GameplayState(State):
         self.save_game()
 
     def save_game(self):
-        save_game_data(self.FILE_PATH, self)
+        save_data = {
+            "player_data" : self.player.get_save_data(),
+            "map" : self.map.name,
+            "file_path" : self.FILE_PATH
+        }
+        save_game_data(self.FILE_PATH, save_data)

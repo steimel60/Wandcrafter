@@ -2,18 +2,17 @@ from items.wand import Wand
 import pygame as pg
 from config.game_settings import TILESIZE
 from .animation import Animation
-from math import inf
 
 class PlayerEntitiy:
     def __init__(
             self,
             name : str = None,
-            wand : Wand = None
+            wand : Wand = None,
+            coord : list = [0,0]
             ) -> None:
         self.name = name
         self.wand = wand
-        self.x = 50 # this will change
-        self.y = 50 # This will change
+        self.x, self.y = coord
         self.height = TILESIZE
         self.width = TILESIZE
         self.rect = pg.Rect(self.x, self.y, self.height, self.width) # hit box
@@ -50,18 +49,25 @@ class PlayerEntitiy:
     def draw(self, screen):
         screen.blit(self.anim_dict[self.current_anim].get_current_frame(), (self.x, self.y))
 
+    def get_save_data(self):
+        return {
+            "name" : self.name,
+            "wand" : self.wand,
+            "coord" : [self.x, self.y]
+        }
+
     def initialize_anim_dict(self):
         return {
             "walk_down" : Animation("walk_down", 15),
             "run_down" : Animation("walk_down", 5),
-            "idle_down" : Animation("idle_down", inf),
+            "idle_down" : Animation("idle_down", 15),
             "walk_up" : Animation("walk_up", 15),
             "run_up" : Animation("walk_up", 5),
-            "idle_up" : Animation("idle_up", inf),
+            "idle_up" : Animation("idle_up", 15),
             "walk_left" : Animation("walk_left", 15),
             "run_left" : Animation("walk_left", 5),
-            "idle_left" : Animation("idle_left", inf),
+            "idle_left" : Animation("idle_left", 15),
             "walk_right" : Animation("walk_right", 15),
             "run_right" : Animation("walk_right", 5),
-            "idle_right" : Animation("idle_right", inf)
+            "idle_right" : Animation("idle_right", 15)
             }

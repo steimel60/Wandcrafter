@@ -33,7 +33,7 @@ def select_file():
     )
     return path
 
-def load_game():
+def select_saved_game():
     path = select_file()
     file = Path(path).name
     return load_game_data(path)

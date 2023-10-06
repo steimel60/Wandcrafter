@@ -2,7 +2,7 @@ import pygame as pg
 from .state_base import State
 from config.colors import *
 from config.game_settings import GAME_TITLE
-from utils.save_system import load_game
+from utils.save_system import select_saved_game
 
 class MainMenuState(State):
     def __init__(self):
@@ -42,6 +42,6 @@ class MainMenuState(State):
             screen.blit(text, text_rect)
 
     def load_existing_game(self):
-        game = load_game()
+        game = select_saved_game()
         if game is not None:
             return ["LOAD_DATA", game]
