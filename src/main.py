@@ -29,7 +29,7 @@ class GameManager:
         self.state_manager.handle_events(pg.event.get())
 
     def update(self):
-        pass
+        self.state_manager.update()
 
     def draw(self):
         self.state_manager.draw(self.screen)

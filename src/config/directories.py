@@ -2,13 +2,14 @@ from pathlib import Path
 from .game_settings import GAME_TITLE
 
 # Main Game Folder and Sub-Modules
-GAME_DIR = Path(__file__).parents[1]
+GAME_DIR = Path(__file__).parents[2]
 SOURCE_DIR = GAME_DIR / "src"
 ASSET_DIR = GAME_DIR / "assets"
-CONFIG_DIR = GAME_DIR / "config"
+CONFIG_DIR = SOURCE_DIR / "config"
 
 # ASSET DIRS
 IMAGE_DIR = ASSET_DIR / "images"
+ANIM_DIR = ASSET_DIR / "animations"
 CLOTHES_DIR = IMAGE_DIR / "clothing"
 FONT_DIR = ASSET_DIR / "fonts"
 MUSIC_DIR = ASSET_DIR / "music"

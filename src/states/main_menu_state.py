@@ -11,7 +11,7 @@ class MainMenuState(State):
         self.options = ["New Game", "Load Game"]
         self.font = pg.font.Font(None, 36)
 
-    def update(self, events):
+    def handle_events(self, events):
         for event in events:
             if event.type == pg.KEYDOWN:
                 match event.key:

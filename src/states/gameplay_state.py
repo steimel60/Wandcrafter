@@ -16,14 +16,17 @@ class GameplayState(State):
         self.game_data = g_data
         self.quest_data = q_data
 
-    def update(self, events):
+    def handle_events(self, events):
+        self.player.handle_events(events)
+
+    def update(self):
         # Update logic for the gameplay state
-        #print(self.player.name)
-        pass
+        self.player.update()
 
     def draw(self, screen):
         # Draw the gameplay on the screen
         screen.fill(MYSTIC_BLUE)
+        self.player.draw(screen)
 
     def set_filepath(self, new_path: Path):
         if new_path.suffix == ".pkl": self.FILE_PATH = new_path

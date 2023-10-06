@@ -20,11 +20,14 @@ class StateManager:
         if any([event.type == pg.QUIT for event in events]):
             pg.quit()
             sys.exit()
-        response = self.state_dict[self.current_state].update(events)
+        response = self.state_dict[self.current_state].handle_events(events)
         match response:
             case ["CHANGE_STATE", new_state, *tags]: self.change_state(new_state, tags)
             case ["LOAD_DATA", data, *tags]: self.load_data(data, tags)
             case _: pass
+
+    def update(self):
+        self.state_dict[self.current_state].update()
 
     def draw(self, screen):
         self.state_dict[self.current_state].draw(screen)

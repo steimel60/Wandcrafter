@@ -23,7 +23,7 @@ class CharacterCreationState(State):
         self.current_attr = 0
         self.attribute_idx = [0 for key in self.options]
 
-    def update(self, events):
+    def handle_events(self, events):
         for event in events:
             if event.type == pg.KEYDOWN:
                 match event.key:
