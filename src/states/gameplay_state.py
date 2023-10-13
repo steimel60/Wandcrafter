@@ -1,5 +1,5 @@
 from pathlib import Path
-from .state_base import State
+from states.state_base import State
 from config.colors import *
 from config.directories import USER_GAME_DIR
 from utils.save_system import save_game_data

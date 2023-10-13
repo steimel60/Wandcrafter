@@ -1,4 +1,4 @@
-from .game_settings import TILESIZE, SCREEN_WIDTH, SCREEN_HEIGHT
+from config.game_settings import TILESIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 #Menu Settings
 SIDE_MENU_W = 7*TILESIZE

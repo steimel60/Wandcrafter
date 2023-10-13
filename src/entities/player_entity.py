@@ -1,7 +1,7 @@
 from items.wand import Wand
 import pygame as pg
 from config.game_settings import TILESIZE
-from .animation import Animation
+from entities.animation import Animation
 
 class PlayerEntitiy:
     def __init__(

@@ -1,4 +1,4 @@
-from .item import Item
+from items.item import Item
 
 class WandWood:
     def __init__(self, name : str) -> None:

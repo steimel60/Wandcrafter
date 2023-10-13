@@ -1,5 +1,5 @@
 from pathlib import Path
-from .game_settings import GAME_TITLE
+from config.game_settings import GAME_TITLE
 
 # Main Game Folder and Sub-Modules
 GAME_DIR = Path(__file__).parents[2]

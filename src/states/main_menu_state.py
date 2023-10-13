@@ -1,5 +1,5 @@
 import pygame as pg
-from .state_base import State
+from states.state_base import State
 from config.colors import *
 from config.game_settings import GAME_TITLE
 from utils.save_system import select_saved_game

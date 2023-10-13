@@ -1,6 +1,6 @@
 import pygame as pg
-from .state_base import State
-from .gameplay_state import GameplayState
+from states.state_base import State
+from states.gameplay_state import GameplayState
 from entities.player_entity import PlayerEntitiy
 from items.wand import Wand, WandCore, WandLength, WandWood
 from config.colors import *
