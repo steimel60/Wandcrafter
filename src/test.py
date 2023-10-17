@@ -1,5 +1,10 @@
-from config.directories import ANIM_DIR
+import toml
 
-path = ANIM_DIR / "walk_forward"
+# Load a TOML file
+with open('test.toml', 'r') as f:
+    data = toml.load(f)
 
-print([f for f in path.iterdir()])
+print(type(data))
+for key in data:
+    print(key)
+    print(data[key])

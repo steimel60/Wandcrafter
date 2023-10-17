@@ -1,3 +1,9 @@
+"""Configuration file for game settings and menu settings.
+
+This file contains various game settings and constants used throughout the game.
+These settings include player movement speed, broom speed, tile size, screen width,
+and screen height, as well as settings related to the in-game menu.
+"""
 from config.game_settings import TILESIZE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 #Menu Settings

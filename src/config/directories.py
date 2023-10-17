@@ -1,3 +1,11 @@
+"""
+Configuration file for game directories.
+
+This file defines various directories and paths used by your game. These directories
+are organized to store assets, such as images, animations, maps, fonts, and music, and
+also to manage user-specific directories.
+"""
+
 from pathlib import Path
 from config.game_settings import GAME_TITLE
 

@@ -1,3 +1,11 @@
+"""
+Configuration file for game settings and color definitions.
+
+This file defines various game settings, including color definitions used for various
+aspects of the game, such as graphics and interface. It also assigns specific colors for
+backgrounds and other elements in the game.
+"""
+
 # Color definitions
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

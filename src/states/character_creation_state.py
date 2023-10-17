@@ -1,15 +1,25 @@
+"""
+CharacterCreationState Module
+
+This module defines the `CharacterCreationState` class, which represents the game state
+where the player is choosing character attributes.
+"""
+
 import pygame as pg
 from states.state_base import State
-from states.gameplay_state import GameplayState
-from entities.player_entity import PlayerEntitiy
+from entities.player_character import PlayerCharacter
 from items.wand import Wand, WandCore, WandLength, WandWood
-from config.colors import *
-from pathlib import Path
-from config.directories import USER_GAME_DIR
-from utils.save_system import save_game_data, load_game_data
+from config.colors import WHITE, LIGHTGREY, MYSTIC_RED
 
 class CharacterCreationState(State):
+    """
+    CharacterCreationState Class
+
+    This class represents the game state where the player is choosing character attributes.
+    It manages character attribute selection, character creation, and game initiation.
+    """
     def __init__(self):
+        """Initialize the Character Creation State."""
         super().__init__()
         self.font = pg.font.Font(None, 36)
         self.options = {
@@ -21,9 +31,19 @@ class CharacterCreationState(State):
             'Back' : [None]
         }
         self.current_attr = 0
-        self.attribute_idx = [0 for key in self.options]
+        self.attr_idx = [0 for key in self.options]
 
-    def handle_events(self, events):
+    def handle_events(self, events, *args):
+        """
+        Handle events in the character creation state.
+
+        Args:
+            events (list): A list of pygame events to process.
+        
+        Returns:
+            list: A list indicating the action to take in response to the events in the format
+                  [EVENT_NAME, data, tags]
+        """
         for event in events:
             if event.type == pg.KEYDOWN:
                 match event.key:
@@ -34,20 +54,31 @@ class CharacterCreationState(State):
                         self.current_attr = (self.current_attr + 1) % len(self.options)
                     # Select Attribute Choice
                     case pg.K_LEFT:
-                        self.attribute_idx[self.current_attr] -= 1
-                        self.attribute_idx[self.current_attr] = self.attribute_idx[self.current_attr] % len(self.options[list(self.options.keys())[self.current_attr]])
+                        #self.attr_idx[self.current_attr] -= 1
+                        n_choices = len(self.options[list(self.options.keys())[self.current_attr]])
+                        self.attr_idx[self.current_attr] = (
+                            (self.attr_idx[self.current_attr] - 1) % n_choices
+                            )
                     case pg.K_RIGHT:
-                        self.attribute_idx[self.current_attr] = (self.attribute_idx[self.current_attr] + 1) % len(self.options[list(self.options.keys())[self.current_attr]])
+                        n_choices = len(self.options[list(self.options.keys())[self.current_attr]])
+                        self.attr_idx[self.current_attr] = (
+                            (self.attr_idx[self.current_attr] + 1) % n_choices
+                            )
                     # Start new game!
                     case pg.K_RETURN:
                         selection = list(self.options.keys())[self.current_attr]
                         if selection == "Start Game":
                             return ["LOAD_DATA", self.make_player(), "NEW_GAME"]
-                        elif selection == "Back":
+                        if selection == "Back":
                             return ["CHANGE_STATE", "main_menu"]
+            return None
 
-    def draw(self, screen):
-        # Draw the gameplay on the screen
+    def draw(self, screen, *args):
+        """Draw the Character Creation menu on the screen.
+
+        Args:
+            screen (pygame.Surface): The pygame surface to draw on.
+        """
         screen.fill(MYSTIC_RED)
         # Add Title
         text_color = WHITE
@@ -58,18 +89,24 @@ class CharacterCreationState(State):
         for i, attribute in enumerate(self.options):
             text_color = WHITE if i == self.current_attr else LIGHTGREY
             if attribute in ["Back", "Start Game"]: text = attribute
-            else: text = f"{attribute}: {self.options[attribute][self.attribute_idx[i]]}"
+            else: text = f"{attribute}: {self.options[attribute][self.attr_idx[i]]}"
             text = self.font.render(text, True, text_color)
             text_rect = text.get_rect(center=(screen.get_width() // 2, 200 + i * 50))
             screen.blit(text, text_rect)
 
-    def make_player(self) -> PlayerEntitiy:
-        player = PlayerEntitiy(
-            name = self.options["Name"][self.attribute_idx[0]],
+    def make_player(self) -> PlayerCharacter:
+        """
+        Create a new player entity based on the selected character attributes.
+
+        Returns:
+            PlayerCharacter: A newly created player entity with the chosen attributes.
+        """
+        player = PlayerCharacter(
+            name = self.options["Name"][self.attr_idx[0]],
             wand = Wand(
-                wood = WandWood(self.options["Wand Wood"][self.attribute_idx[1]]),
-                core = WandCore(self.options["Wand Core"][self.attribute_idx[2]]),
-                length = WandLength(self.options["Wand Length (inches)"][self.attribute_idx[3]])
+                wood = WandWood(self.options["Wand Wood"][self.attr_idx[1]]),
+                core = WandCore(self.options["Wand Core"][self.attr_idx[2]]),
+                length = WandLength(self.options["Wand Length (inches)"][self.attr_idx[3]])
             )
         )
         return player
