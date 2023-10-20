@@ -7,7 +7,7 @@ This module defines the `PlayerCharacter` class, which represents a player chara
 import pygame as pg
 from entities.characters import Character
 from items.wand import Wand
-from config.player_settings import WALK_SPEED
+from config.game_settings import TILESIZE
 
 class PlayerCharacter(Character):
     """
@@ -45,6 +45,7 @@ class PlayerCharacter(Character):
             y (int): The initial y coordinate of the player. Defaults to 0.
         """
         super().__init__(name, x, y)
+        self.interact_tile = self.destination.copy()
         self.wand = wand
 
     def handle_events(self, events):
@@ -54,21 +55,13 @@ class PlayerCharacter(Character):
         Args:
             events (list): A list of pygame events to process.
         """
+        # Triggered Events
         for event in events:
             if event.type == pg.KEYDOWN:
                 match event.key:
-                    case pg.K_UP | pg.K_w:
-                        self.set_animation("walk_up")
-                        self.y -= WALK_SPEED
-                    case pg.K_DOWN | pg.K_s:
-                        self.set_animation("walk_down")
-                        self.y += WALK_SPEED
-                    case pg.K_LEFT | pg.K_a:
-                        self.set_animation("walk_left")
-                        self.x -= WALK_SPEED
-                    case pg.K_RIGHT | pg.K_d:
-                        self.set_animation("walk_right")
-                        self.x += WALK_SPEED
+                    case pg.K_SPACE:
+                        if "idle" in self.appearance.current_anim:
+                            print("INTERACT EVENT")
             if event.type == pg.KEYUP:
                 match event.key:
                     case pg.K_UP | pg.K_w:
@@ -79,6 +72,47 @@ class PlayerCharacter(Character):
                         self.set_animation("idle_left")
                     case pg.K_RIGHT | pg.K_d:
                         self.set_animation("idle_right")
+        # Continuous Events
+        keys = pg.key.get_pressed()
+        if (keys[pg.K_UP] or keys[pg.K_w]):
+            self.set_animation("walk_up")
+            self.change_destination(0, -TILESIZE)
+        elif (keys[pg.K_DOWN] or keys[pg.K_s]):
+            self.set_animation("walk_down")
+            self.change_destination(0, TILESIZE)
+        elif (keys[pg.K_LEFT] or keys[pg.K_a]):
+            self.set_animation("walk_left")
+            self.change_destination(-TILESIZE, 0)
+        elif (keys[pg.K_RIGHT] or keys[pg.K_d]):
+            self.set_animation("walk_right")
+            self.change_destination(TILESIZE, 0)
+
+    def update(self):
+        super().update()
+        if "idle" in self.appearance.current_anim:
+            self.update_interaction_rect()
+
+    def update_interaction_rect(self):
+        """Figure out which tile interactions should be called from."""
+        anim_name = self.appearance.current_anim
+        if "up" in anim_name:
+            self.interact_tile.x = self.destination.x
+            self.interact_tile.y = self.destination.y - TILESIZE
+        elif "down" in anim_name:
+            self.interact_tile.x = self.destination.x
+            self.interact_tile.y = self.destination.y + TILESIZE
+        elif "left" in anim_name:
+            self.interact_tile.x = self.destination.x - TILESIZE
+            self.interact_tile.y = self.destination.y
+        elif "right" in anim_name:
+            self.interact_tile.x = self.destination.x + TILESIZE
+            self.interact_tile.y = self.destination.y
+
+    def draw(self, screen: pg.Surface):
+        super().draw(screen)
+        if "idle" in self.appearance.current_anim:
+            pg.draw.rect(screen, (0,255,0), self.interact_tile, 2)
+
 
     def get_save_data(self):
         """

@@ -8,7 +8,8 @@ where the player is actively playing the game.
 from pathlib import Path
 import pygame as pg
 from states.state_base import State
-from config.colors import MYSTIC_BLUE
+from config.colors import MYSTIC_BLUE, BLACK
+from config.game_settings import TILESIZE
 from config.directories import USER_GAME_DIR
 from utils.save_system import save_game_data
 from entities.player_character import PlayerCharacter
@@ -63,7 +64,16 @@ class GameplayState(State):
         """
         screen.fill(MYSTIC_BLUE)
         self.map.draw(screen)
+        self.draw_grid(screen)
         self.player.draw(screen)
+
+    def draw_grid(self, screen):
+        """Draw tiles on screen."""
+        w, h = pg.display.get_surface().get_size()
+        for x in range(0, w, TILESIZE):
+            pg.draw.line(screen, BLACK, (x,0), (x, h))
+        for y in range(0, h, TILESIZE):
+            pg.draw.line(screen, BLACK, (0, y), (w, y))
 
     def set_filepath(self, new_path: Path):
         """Set the file path for saving/loading the game.

@@ -14,6 +14,7 @@ Classes:
 import pygame as pg
 from utils.asset_management import get_anims_in_sprite_sheet, get_hit_box_for_sprite
 from entities.animation import Animation
+from config.player_settings import WALK_SPEED
 
 class Character(pg.sprite.Sprite):
     """Base class for character entities in the game.
@@ -34,8 +35,10 @@ class Character(pg.sprite.Sprite):
         super().__init__()
         self.name = name
         self.x = x
-        self. y = y
+        self.y = y
+        self.speed = WALK_SPEED
         self.appearance = CharacterAppearance(body=body)
+        self.destination = self.rect.copy()
 
     @property
     def rect(self):
@@ -63,8 +66,27 @@ class Character(pg.sprite.Sprite):
         h_diff = frame_h - h
         return w_diff, h_diff
 
+    def change_destination(self, x, y):
+        """Change the character's target destination."""
+        if self.rect == self.destination:
+            self.destination.x += x
+            self.destination.y += y
+
+    def move(self, speed):
+        """Move towards the character's target destination."""
+        if self.rect.y > self.destination.y:
+            self.y -= speed
+        if self.rect.y < self.destination.y:
+            self.y += speed
+        if self.rect.x > self.destination.x:
+            self.x -= speed
+        if self.rect.x < self.destination.x:
+            self.x += speed
+
     def update(self):
         """Update the character's position and appearance."""
+        if self.rect != self.destination:
+            self.move(self.speed)
         self.rect.x, self.rect.y = self.x, self.y
         self.appearance.update()
 
@@ -87,6 +109,7 @@ class Character(pg.sprite.Sprite):
         outline_color = (255,0,0)
         outline_width = 2
         pg.draw.rect(screen, outline_color, self.rect, outline_width)
+        pg.draw.rect(screen, (255,255,0), self.destination, outline_width)
 
 class CharacterAppearance:
     """Handles the appearance and animations of a character entity.
