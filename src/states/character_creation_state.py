@@ -99,14 +99,18 @@ class CharacterCreationState(State):
         Create a new player entity based on the selected character attributes.
 
         Returns:
-            PlayerCharacter: A newly created player entity with the chosen attributes.
+            dict: a dict of kwargs used to initialize a PlayerCharacter.
         """
-        player = PlayerCharacter(
-            name = self.options["Name"][self.attr_idx[0]],
-            wand = Wand(
+        kwargs = {
+            "case" : "player",
+            "name" : self.options["Name"][self.attr_idx[0]],
+            "wand" : Wand(
                 wood = WandWood(self.options["Wand Wood"][self.attr_idx[1]]),
                 core = WandCore(self.options["Wand Core"][self.attr_idx[2]]),
                 length = WandLength(self.options["Wand Length (inches)"][self.attr_idx[3]])
-            )
-        )
-        return player
+            ),
+            "x" : 32,
+            "y" : 32,
+            "sprite_sheet" : "base_body"
+        }
+        return kwargs

@@ -43,7 +43,7 @@ class GameManager:
 
     def events(self):
         """Pass input to the State Manager."""
-        self.state_manager.handle_events(pg.event.get())
+        return self.state_manager.handle_events(pg.event.get())
 
     def update(self):
         """Update current state based on inputs."""
@@ -60,5 +60,4 @@ class GameManager:
 
 if __name__ == "__main__":
     game = GameManager()
-    while True:
-        game.run()
+    game.run()

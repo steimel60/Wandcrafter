@@ -48,3 +48,17 @@ def get_anim_data(sprite_sheet_name, anim_name):
         "row" : data[anim_name]["row"],
         "seq" : data[anim_name]["seq"]
     }
+
+def get_sprite_data(sprite_sheet_name):
+    """Retrieve data from a .toml file for a given sprite sheet.
+    
+    Args:
+        sprite_sheet_name (str): Name of the sprite sheet.
+
+    Returns:
+        dict containing the data in the .toml file.
+    """
+    path = ANIM_DIR / f"{sprite_sheet_name}.toml"
+    with open(path, 'r', encoding="utf-8") as file:
+        data = toml.load(file)
+    return data

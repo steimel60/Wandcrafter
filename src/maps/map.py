@@ -8,6 +8,7 @@ It provides functionality to render and draw the map on a Pygame surface.
 import pygame as pg
 import pytmx
 from config.directories import MAP_DIR
+from entities.obstacles import Obstacle
 
 class TiledMap:
     """
@@ -40,11 +41,13 @@ class TiledMap:
             map_name (str): The name of the Tiled map.
         """
         self.name = map_name
-        tm = pytmx.load_pygame(MAP_DIR / map_name / f"{map_name}.tmx", pixelalpha = True)
+        tm = pytmx.load_pygame(MAP_DIR / f"{map_name}.tmx", pixelalpha = True)
         self.width = tm.width * tm.tilewidth
         self.height =tm.height * tm.tileheight
         self.tmxdata = tm
         self.image = self.make_map()
+        self.rect = self.image.get_rect()
+        self.obstacles = self.get_obstacles()
 
     def render(self, surface):
         """Create the image for the map"""
@@ -62,13 +65,25 @@ class TiledMap:
     def make_map(self):
         """Creates a PyGame surface that can be Blit to the screen"""
         temp_surface = pg.Surface((self.width, self.height))
-        self.render (temp_surface)
+        self.render(temp_surface)
         return temp_surface
 
-    def draw(self, screen):
+    def get_obstacles(self):
+        """Get a list of static obstacles in the map."""
+        obstacles = []
+        for tile_object in self.tmxdata.objects:
+            if tile_object.name == "wall":
+                obstacles.append(
+                    Obstacle(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+                )
+        return obstacles
+
+    def draw(self, screen, camera):
         """Draw the map's image to the screen.
 
         Args:
             screen (pygame.Surface): The pygame surface to draw on.
         """
-        screen.blit(self.image, (0,0))
+        screen.blit(self.image, camera.apply(self))
+        for obstacle in self.obstacles:
+            pg.draw.rect(screen, (255,255,255), camera.apply(obstacle), 2)

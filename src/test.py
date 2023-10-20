@@ -1,19 +1,13 @@
-"""test"""
-class Thing1:
-    """thing 1"""
-    def __init__(self) -> None:
-        self.q = 1
-        self.w = 2
-        self.e = 3
-        self. r =4
-        self.t = 6
-        self.y = 7
-        self.u = 8
-        self.i = 9
-        self.o = 10
+class A:
+    def __init__(self, p1, p2) -> None:
+        self.p1 = p1
+        self.p2 = p2
 
-    def method_1(self):
-        print("1")
+class B(A):
+    def __init__(self, p3, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.p3 = p3
 
-    def method_2(self):
-        print("2")
+b = B(p3 = 3, p1 = 1, p2 =2)
+
+print(b.p1, b.p2, b.p3)

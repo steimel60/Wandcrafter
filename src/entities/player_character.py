@@ -19,7 +19,7 @@ class PlayerCharacter(Character):
     Attributes:
         name (str): The name of the player character.
         wand (Wand, optional): The wand equipped by the player.
-        coord (list): The initial coordinates [x, y] of the player character.
+        interact_tile (pg.Rect): The rect used to see what objects the player is interacting with.
 
     Methods:
         handle_events(events): Handle player input events.
@@ -30,10 +30,9 @@ class PlayerCharacter(Character):
     """
     def __init__(
             self,
-            name : str,
-            wand : Wand = None,
-            x : int = 0,
-            y : int = 0
+            wand : Wand,
+            *args,
+            **kwargs
             ) -> None:
         """
         Initialize a player entity.
@@ -44,7 +43,7 @@ class PlayerCharacter(Character):
             x (int): The initial x coordinate of the player. Defaults to 0.
             y (int): The initial y coordinate of the player. Defaults to 0.
         """
-        super().__init__(name, x, y)
+        super().__init__(*args, **kwargs)
         self.interact_tile = self.destination.copy()
         self.wand = wand
 
@@ -87,8 +86,8 @@ class PlayerCharacter(Character):
             self.set_animation("walk_right")
             self.change_destination(TILESIZE, 0)
 
-    def update(self):
-        super().update()
+    def update(self, *args, **kwargs):
+        super().update(*args, **kwargs)
         if "idle" in self.appearance.current_anim:
             self.update_interaction_rect()
 
@@ -108,10 +107,11 @@ class PlayerCharacter(Character):
             self.interact_tile.x = self.destination.x + TILESIZE
             self.interact_tile.y = self.destination.y
 
-    def draw(self, screen: pg.Surface):
-        super().draw(screen)
+    def draw(self, screen: pg.Surface, camera):
+        super().draw(screen, camera)
+        # Draw the tile that a player would interact with if called
         if "idle" in self.appearance.current_anim:
-            pg.draw.rect(screen, (0,255,0), self.interact_tile, 2)
+            pg.draw.rect(screen, (0,255,0), camera.apply_rect(self.interact_tile), 2)
 
 
     def get_save_data(self):
@@ -125,5 +125,6 @@ class PlayerCharacter(Character):
             "name" : self.name,
             "wand" : self.wand,
             "x" : self.x,
-            "y" : self.y
+            "y" : self.y,
+            "sprite_sheet" : self.appearance.sprite_sheet
         }

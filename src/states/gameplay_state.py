@@ -13,7 +13,9 @@ from config.game_settings import TILESIZE
 from config.directories import USER_GAME_DIR
 from utils.save_system import save_game_data
 from entities.player_character import PlayerCharacter
+from entities.npc import NPC
 from maps.map import TiledMap
+from maps.camera import Camera
 
 class GameplayState(State):
     """
@@ -34,7 +36,9 @@ class GameplayState(State):
         self.file_path = path
         self.player = player
         self.map = tile_map
+        self.camera = Camera()
         self.save_data = {}
+        self.sprite_groups = self.init_sprite_groups()
         self.quest_data = None
 
     def handle_events(self, events, *args):
@@ -49,12 +53,19 @@ class GameplayState(State):
                 match event.key:
                     case pg.K_y:
                         self.save_game()
+            if event.type == pg.VIDEORESIZE:
+                self.camera.change_screen_size()
         ###########################    END TEST    ###############################
         self.player.handle_events(events)
 
     def update(self, *args):
         """Update logic for the gameplay state."""
-        self.player.update()
+        for sprite in self.sprite_groups["characters"]:
+            sprite.update(
+                tile_map = self.map,
+                sprite_group = self.sprite_groups["all_sprites"]
+                )
+        self.camera.update(self.player.hitbox)
 
     def draw(self, screen, *args):
         """Draw the gameplay on the screen.
@@ -63,9 +74,11 @@ class GameplayState(State):
             screen (pygame.Surface): The pygame surface to draw on.
         """
         screen.fill(MYSTIC_BLUE)
-        self.map.draw(screen)
+        self.map.draw(screen, self.camera)
         self.draw_grid(screen)
-        self.player.draw(screen)
+        #self.player.draw(screen, self.camera)
+        for sprite in self.sprite_groups["all_sprites"]:
+            sprite.draw(screen, self.camera)
 
     def draw_grid(self, screen):
         """Draw tiles on screen."""
@@ -74,6 +87,19 @@ class GameplayState(State):
             pg.draw.line(screen, BLACK, (x,0), (x, h))
         for y in range(0, h, TILESIZE):
             pg.draw.line(screen, BLACK, (0, y), (w, y))
+
+    def init_sprite_groups(self):
+        """Create a dict of sprite groups to store dynamic objects.
+        
+        This dict organizes all the sprites in a map that have some sort of logic. Allowing
+        them to be easily updated all at once.
+        """
+        return {
+            "all_sprites" : pg.sprite.Group(),
+            "characters" : pg.sprite.Group(),
+            "player" : pg.sprite.Group(),
+            "npcs" : pg.sprite.Group()
+        }
 
     def set_filepath(self, new_path: Path):
         """Set the file path for saving/loading the game.
@@ -100,20 +126,46 @@ class GameplayState(State):
         """
         self.quest_data = quest_data
 
-    def open_map(self, map_name):
+    def open_map(self, map_name: str):
         """Open and load a map.
+
+        This method will initialize a TiledMap and store any dynamic objects,
+        suchs as NPCs, in it's own sprite_group dict. This allows game logic to
+        be applied to groups separately.
+
+        Note: Static objects such as walls are stored in the map object.
 
         Args:
             map_name (str): The name of the map to load.
         """
         self.map = TiledMap(map_name)
+        for tile_object in self.map.tmxdata.objects:
+            if tile_object.name.lower() == "npc":
+                groups = [
+                    self.sprite_groups["all_sprites"],
+                    self.sprite_groups["characters"],
+                    self.sprite_groups["npcs"]
+                    ]
+                NPC(
+                    name = tile_object.name_id,
+                    x = tile_object.x,
+                    y = tile_object.y,
+                    sprite_sheet = "base_body",
+                    groups = groups
+                )
+        self.camera.open_map(self.map)
 
-    def load_data(self, data, tags):
+    def load_data(self, data: dict, tags: list[str]) -> None:
         """Load game data based on tags.
 
         Args:
-            data: The game data to load.
-            tags: Tags indicating how to handle the data.
+            data (dict): The game data to load. This dict should always contain
+                the key "case" indicating the type of data meant to be loaded.
+            tags (list[str]): Tags indicating how to handle the data.
+
+        Current Implemented Cases:
+        - "player": The data being passes is keyword args meant for a PlayerCharacter.
+        -"saved_game": The data being loaded is a previously saved game.
 
         Current Implemented Tags:
         - "NEW_GAME": Starts a new game when the data passed is a PlayerCharacter.
@@ -121,13 +173,32 @@ class GameplayState(State):
         The method processes the provided data based on the specified tags. Each tag
         triggers a different action or behavior within the method.
         """
-
-        match data:
-            case PlayerCharacter():
+        case = data.pop("case")
+        match case:
+            case "player":
                 if "NEW_GAME" in tags:
-                    self.new_game(data)
-                else: self.load_player(data)
-            case _: self.load_game(data)
+                    self.new_game(
+                        PlayerCharacter(
+                            **data,
+                            groups = [
+                                self.sprite_groups["all_sprites"],
+                                self.sprite_groups["characters"],
+                                self.sprite_groups["player"]
+                                ]
+                            )
+                    )
+                else: self.load_player(
+                    PlayerCharacter(
+                            **data,
+                            groups = [
+                                self.sprite_groups["all_sprites"],
+                                self.sprite_groups["characters"],
+                                self.sprite_groups["player"]
+                                ]
+                            )
+                    )
+            case "saved_game": self.load_game(data)
+            case _: print("Case not recognized.")
 
     def load_player(self, player):
         """Load a player entity.
@@ -147,7 +218,13 @@ class GameplayState(State):
             name = save_dict["player_data"]["name"],
             wand = save_dict["player_data"]["wand"],
             x = save_dict["player_data"]["x"],
-            y = save_dict["player_data"]["y"]
+            y = save_dict["player_data"]["y"],
+            sprite_sheet = save_dict["player_data"]["sprite_sheet"],
+            groups = [
+                self.sprite_groups["all_sprites"],
+                self.sprite_groups["characters"],
+                self.sprite_groups["player"]
+                ]
         )
         self.set_player(player)
         self.open_map(save_dict["map"])
@@ -173,6 +250,7 @@ class GameplayState(State):
     def save_game(self):
         """Save the current game data."""
         save_data = {
+            "case" : "saved_game",
             "player_data" : self.player.get_save_data(),
             "map" : self.map.name,
             "file_path" : self.file_path

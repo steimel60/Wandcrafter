@@ -9,7 +9,6 @@ they move with the camera's view and stay within the boundaries of the game worl
 """
 
 import pygame as pg
-from config.game_settings import SCREEN_HEIGHT, SCREEN_WIDTH
 
 class Camera:
     """
@@ -23,17 +22,32 @@ class Camera:
     the camera's view. It also ensures that the camera doesn't move beyond the
     boundaries of the game world.
     """
-    def __init__(self, width, height):
+    def __init__(self, width: int = 0, height: int = 0):
         """
         Initialize the Camera object.
 
         Args:
-            width (int): The width of the camera.
-            height (int): The height of the camera.
+            width (int): The width of the current map.
+            height (int): The height of the current map.
         """
-        self.camera = pg.Rect(0,0, width, height)
+        self.rect = pg.Rect(0,0, width, height)
         self.width = width
         self.height = height
+        info = pg.display.Info()
+        self.screen_h = info.current_h
+        self.screen_w = info.current_w
+
+    def open_map(self, tile_map):
+        """Set the camera width and height to match a given map."""
+        self.width = tile_map.width
+        self.height = tile_map.height
+        self.rect = pg.Rect(0,0, self.width, self.height)
+
+    def change_screen_size(self):
+        """Get the new width and height of the screen. """
+        info = pg.display.Info()
+        self.screen_h = info.current_h
+        self.screen_w = info.current_w
 
     def apply(self, entity):
         """
@@ -50,7 +64,7 @@ class Camera:
             Rect: A new rectangle representing the entity's position adjusted
             for the camera's position.
         """
-        return entity.rect.move(self.camera.topleft)
+        return entity.rect.move(self.rect.topleft)
 
     def apply_rect(self, rect):
         """
@@ -66,7 +80,7 @@ class Camera:
             Rect: A new rectangle representing the original rectangle's position
             adjusted for the camera's position.
         """
-        return rect.move(self.camera.topleft)
+        return rect.move(self.rect.topleft)
 
     def update(self, target):
         """
@@ -81,13 +95,13 @@ class Camera:
             target: The target entity (e.g., the player character) to keep centered
             on the screen.
         """
-        x = -target.rect.x + int(SCREEN_WIDTH / 2)
-        y = -target.rect.y + int(SCREEN_HEIGHT / 2)
+        x = -target.rect.x + int(self.screen_w / 2)
+        y = -target.rect.y + int(self.screen_h / 2)
 
         # limit scrolling to map size
         x = min(0,x) # left
-        x = max(-(self.width - SCREEN_WIDTH), x) # right
+        x = max(-(self.width - self.screen_w), x) # right
         y = min(0,y) # top
-        y = max(-(self.height - SCREEN_HEIGHT), y) # bottom
+        y = max(-(self.height - self.screen_h), y) # bottom
 
-        self.camera = pg.Rect(x, y, self.width, self.height)
+        self.rect = pg.Rect(x, y, self.width, self.height)
