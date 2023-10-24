@@ -6,24 +6,23 @@ For example loading the information for an animation from a sprite sheet.
 """
 
 import toml
-from config.directories import ANIM_DIR
+from pathlib import Path
 
-
-def get_anims_in_sprite_sheet(sprite_sheet_name: str) -> list[str]:
+def get_anims_in_sprite_sheet(sprite_sheet_path: Path) -> list[str]:
     """Retrieve names of animations in a sprite sheet."""
-    path = ANIM_DIR / f"{sprite_sheet_name}.toml"
+    path = sprite_sheet_path.with_suffix(".toml")
     with open(path, 'r', encoding="utf-8") as file:
         data = toml.load(file)
     return [key for key in data if key != "sheet_data"]
 
-def get_hit_box_for_sprite(sprite_sheet_name: str):
+def get_hit_box_for_sprite(sprite_sheet_path: Path):
     """Retrieve hitbox size in a give sprite sheet."""
-    path = ANIM_DIR / f"{sprite_sheet_name}.toml"
+    path = sprite_sheet_path.with_suffix(".toml")
     with open(path, 'r', encoding="utf-8") as file:
         data = toml.load(file)
     return (data["sheet_data"]["hit_box_w"],data["sheet_data"]["hit_box_h"])
 
-def get_anim_data(sprite_sheet_name, anim_name):
+def get_anim_data(sprite_sheet_path: Path, anim_name):
     """Retrieve data for a specific animation within a sprite sheet.
     
     Args:
@@ -38,7 +37,7 @@ def get_anim_data(sprite_sheet_name, anim_name):
         - "row" : which row of the sprite sheet the animation is on.
         - "seq" : sequence of columns that create the animation.
     """
-    path = ANIM_DIR / f"{sprite_sheet_name}.toml"
+    path = sprite_sheet_path.with_suffix(".toml")
     with open(path, 'r', encoding="utf-8") as file:
         data = toml.load(file)
     return {
@@ -49,7 +48,7 @@ def get_anim_data(sprite_sheet_name, anim_name):
         "seq" : data[anim_name]["seq"]
     }
 
-def get_sprite_data(sprite_sheet_name):
+def get_sprite_data(sprite_sheet_path):
     """Retrieve data from a .toml file for a given sprite sheet.
     
     Args:
@@ -58,7 +57,7 @@ def get_sprite_data(sprite_sheet_name):
     Returns:
         dict containing the data in the .toml file.
     """
-    path = ANIM_DIR / f"{sprite_sheet_name}.toml"
+    path = sprite_sheet_path.with_suffix(".toml")
     with open(path, 'r', encoding="utf-8") as file:
         data = toml.load(file)
     return data

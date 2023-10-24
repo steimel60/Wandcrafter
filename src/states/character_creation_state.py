@@ -9,7 +9,10 @@ import pygame as pg
 from states.state_base import State
 from entities.player_character import PlayerCharacter
 from items.wand import Wand, WandCore, WandLength, WandWood
+from items.inventory import CharacterInventory
+from items.cloak import Cloak
 from config.colors import WHITE, LIGHTGREY, MYSTIC_RED
+from config.directories import SPRITES_DIR
 
 class CharacterCreationState(State):
     """
@@ -101,16 +104,30 @@ class CharacterCreationState(State):
         Returns:
             dict: a dict of kwargs used to initialize a PlayerCharacter.
         """
-        kwargs = {
-            "case" : "player",
-            "name" : self.options["Name"][self.attr_idx[0]],
-            "wand" : Wand(
+        # Get selected options
+        species = "human"
+        wand = Wand(
                 wood = WandWood(self.options["Wand Wood"][self.attr_idx[1]]),
                 core = WandCore(self.options["Wand Core"][self.attr_idx[2]]),
                 length = WandLength(self.options["Wand Length (inches)"][self.attr_idx[3]])
-            ),
+            )
+        cloak = Cloak(sprite_sheet = SPRITES_DIR / species / "cloak" / "school_cloak")
+        # Add options to inventory
+        inventory = CharacterInventory()
+        inventory.equip(cloak)
+        inventory.add_item(wand)
+        sprites = [SPRITES_DIR / species / "base_body.png"]
+        for _, item in inventory.equipped.items():
+            if item:
+                sprites.append(item.sprite_sheet)
+                print(item.sprite_sheet)
+        # Create initialization dict
+        kwargs = {
+            "case" : "player",
+            "name" : self.options["Name"][self.attr_idx[0]],
             "x" : 32,
             "y" : 32,
-            "sprite_sheet" : "base_body"
+            "inventory" : inventory,
+            "sprite_sheet" : sprites
         }
         return kwargs

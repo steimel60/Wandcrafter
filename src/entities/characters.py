@@ -14,20 +14,20 @@ Classes:
 import pygame as pg
 from entities.entity import Entity
 from config.player_settings import WALK_SPEED
+from config.directories import SPRITES_DIR
+from items.inventory import CharacterInventory
 
 class Character(Entity):
     """Base class for character entities in the game.
 
     Attributes:
         name (str): The name of the character.
-        x (int): The x-coordinate of the character's position.
-        y (int): The y-coordinate of the character's position.
-        rect (pygame.Rect): The hit box (rectangle) that defines the character's position and size.
-        appearance (Appearance): The appearance of the character.
     """
-    def __init__(self, name: str, *args, **kwargs) -> None:
+    def __init__(self, name: str, inventory: CharacterInventory, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.name = name
+        self.species = "human"
+        self.inventory = inventory
         self.speed = WALK_SPEED
         self.destination = self.hitbox.rect.copy()
 
@@ -38,15 +38,19 @@ class Character(Entity):
             self.destination.y += y
 
     def move(self, speed):
-        """Move towards the character's target destination."""
+        """Move towards the character's target destination.
+        
+        Used to make characer slide across the screen as opposed to snap
+        from position to position.
+        """
         if self.hitbox.rect.y > self.destination.y:
-            self.y -= speed
+            self.change_position(0, -speed)
         if self.hitbox.rect.y < self.destination.y:
-            self.y += speed
+            self.change_position(0, speed)
         if self.hitbox.rect.x > self.destination.x:
-            self.x -= speed
+            self.change_position(-speed, 0)
         if self.hitbox.rect.x < self.destination.x:
-            self.x += speed
+            self.change_position(speed, 0)
         self.hitbox.move(self.x, self.y)
 
     def update(self, **kwargs):
@@ -63,6 +67,16 @@ class Character(Entity):
             elif self.destination.collidelist(other_sprites) != -1:
                 self.destination = self.hitbox.rect.copy()
             else: self.move(self.speed)
+
+    def update_appearance(self):
+        """Update the character's sprite based on their current inventory."""
+        base_sprite = SPRITES_DIR / self.species / "base_body.png"
+        layers = [base_sprite]
+        for _, item in self.inventory.equipped.items():
+            if item is not None:
+                layers.append(item)
+        layers.insert(0, base_sprite)
+        self.appearance.make_new_animation(layers)
 
     def draw(self, screen, camera):
         super().draw(screen, camera)

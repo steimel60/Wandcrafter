@@ -10,12 +10,13 @@ import pygame as pg
 from states.state_base import State
 from config.colors import MYSTIC_BLUE, BLACK
 from config.game_settings import TILESIZE
-from config.directories import USER_GAME_DIR
+from config.directories import USER_GAME_DIR, SPRITES_DIR
 from utils.save_system import save_game_data
 from entities.player_character import PlayerCharacter
 from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
+from items.inventory import CharacterInventory
 
 class GameplayState(State):
     """
@@ -146,11 +147,14 @@ class GameplayState(State):
                     self.sprite_groups["characters"],
                     self.sprite_groups["npcs"]
                     ]
+                inventory = CharacterInventory()
+                sprites = [SPRITES_DIR / "human" / "base_body.png"]
                 NPC(
                     name = tile_object.name_id,
                     x = tile_object.x,
                     y = tile_object.y,
-                    sprite_sheet = "base_body",
+                    inventory = inventory,
+                    sprite_sheet = sprites,
                     groups = groups
                 )
         self.camera.open_map(self.map)
@@ -174,6 +178,7 @@ class GameplayState(State):
         triggers a different action or behavior within the method.
         """
         case = data.pop("case")
+        print(data)
         match case:
             case "player":
                 if "NEW_GAME" in tags:
@@ -216,9 +221,9 @@ class GameplayState(State):
         """
         player = PlayerCharacter(
             name = save_dict["player_data"]["name"],
-            wand = save_dict["player_data"]["wand"],
             x = save_dict["player_data"]["x"],
             y = save_dict["player_data"]["y"],
+            inventory = save_dict["player_data"]["inventory"],
             sprite_sheet = save_dict["player_data"]["sprite_sheet"],
             groups = [
                 self.sprite_groups["all_sprites"],

@@ -1,0 +1,65 @@
+[sheet_data]
+tile_w = 32
+tile_h = 64
+hit_box_w = 32
+hit_box_h = 32
+
+[idle_down]
+frame_duration = 40
+row = 0
+seq = [0,0]
+
+[idle_up]
+frame_duration = 40
+row = 0
+seq = [4,4]
+
+[idle_left]
+frame_duration = 30
+row = 1
+seq = [0,0]
+
+[idle_right]
+frame_duration = 30
+row = 1
+seq = [4,4]
+
+[walk_down]
+frame_duration = 12
+row = 0
+seq = [0, 1, 2, 3]
+
+[walk_up]
+frame_duration = 12
+row = 0
+seq = [4, 5, 6, 7]
+
+[walk_left]
+frame_duration = 12
+row = 1
+seq = [0, 1, 2, 3]
+
+[walk_right]
+frame_duration = 12
+row = 1
+seq = [4, 5, 6, 7]
+
+[run_down]
+frame_duration = 12
+row = 0
+seq = [0, 1, 2, 3]
+
+[run_up]
+frame_duration = 12
+row = 0
+seq = [4, 5, 6, 7]
+
+[run_left]
+frame_duration = 12
+row = 1
+seq = [0, 1, 2, 3]
+
+[run_right]
+frame_duration = 12
+row = 1
+seq = [4, 5, 6, 7]

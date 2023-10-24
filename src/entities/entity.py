@@ -2,8 +2,10 @@
 
 This module is for anything drawn in the game.
 """
+from pathlib import Path
 import pygame as pg
 from utils.asset_management import get_anims_in_sprite_sheet, get_sprite_data
+
 from entities.animation import Animation
 
 class Entity(pg.sprite.Sprite):
@@ -16,13 +18,13 @@ class Entity(pg.sprite.Sprite):
             groups: list[pg.sprite.Group],
             x: int,
             y: int,
-            sprite_sheet: str
+            sprite_sheet: list[Path]
             ) -> None:
         super().__init__(*groups)
         self.x = x
         self.y = y
         self.appearance = EntityAppearance(sprite_sheet=sprite_sheet)
-        self.hitbox = HitBox(x, y, sprite_sheet)
+        self.hitbox = HitBox(x, y, self.appearance)
 
     @property
     def rect(self):
@@ -42,6 +44,11 @@ class Entity(pg.sprite.Sprite):
     def update(self, **_kwargs) -> None:
         """Update the entity's animation."""
         self.appearance.update()
+
+    def change_position(self, dx, dy):
+        """Change position by a given amount."""
+        self.x += dx
+        self.y += dy
 
     def set_animation(self, anim):
         """Set the current animation for the character.
@@ -74,9 +81,11 @@ class EntityAppearance:
     """
     def __init__(
             self,
-            sprite_sheet : str,
+            sprite_sheet : list[Path],
             anim: str = None
     ) -> None:
+        if isinstance(sprite_sheet, Path):
+            sprite_sheet = [sprite_sheet]  # Convert a single string to a list of one string
         self.sprite_sheet = sprite_sheet
         self.anim_dict = self.initialize_anim_dict()
         if anim:
@@ -95,13 +104,25 @@ class EntityAppearance:
         """
         # Load in body images
         anim_dict = {}
-        anims = get_anims_in_sprite_sheet(self.sprite_sheet)
+        anims = get_anims_in_sprite_sheet(self.sprite_sheet[0])
         for anim in anims:
             anim_dict[anim] = Animation(
-                sprite_sheet=self.sprite_sheet,
+                sprite_sheets=self.sprite_sheet,
                 animation=anim
             )
         return anim_dict
+
+    def make_new_animation(self, sprite_sheets: list[Path]):
+        """Replace the current layers with a new set of sprite sheets"""
+        # Load in body images
+        anim_dict = {}
+        anims = get_anims_in_sprite_sheet(sprite_sheets[0])
+        for anim in anims:
+            anim_dict[anim] = Animation(
+                sprite_sheets=sprite_sheets,
+                animation=anim
+            )
+        self.anim_dict = anim_dict
 
     def get_image(self):
         """Get the current image of the character.
@@ -124,7 +145,7 @@ class EntityAppearance:
         if anim in self.anim_dict:
             self.current_anim = anim
 
-    def get_current_anim(self) -> Animation:
+    def get_current_anim(self):
         """Returns the current animation object."""
         return self.anim_dict[self.current_anim]
 
@@ -147,9 +168,9 @@ class HitBox:
     
     Used for collision events.
     """
-    def __init__(self, x_pos, y_pos, sprite) -> None:
-        data = get_sprite_data(sprite)
-        self.x_offset, self.y_offset = self.get_offset(sprite)
+    def __init__(self, x_pos, y_pos, appearance) -> None:
+        data = get_sprite_data(appearance.sprite_sheet[0])
+        self.x_offset, self.y_offset = self.get_offset(appearance.sprite_sheet[0])
         self.rect = pg.Rect(
             x_pos + self.x_offset,
             y_pos + self.y_offset,

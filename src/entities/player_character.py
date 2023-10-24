@@ -6,8 +6,11 @@ This module defines the `PlayerCharacter` class, which represents a player chara
 
 import pygame as pg
 from entities.characters import Character
-from items.wand import Wand
 from config.game_settings import TILESIZE
+
+##### FOR TESTS
+from items.cloak import Cloak
+from config.directories import SPRITES_DIR
 
 class PlayerCharacter(Character):
     """
@@ -30,7 +33,6 @@ class PlayerCharacter(Character):
     """
     def __init__(
             self,
-            wand : Wand,
             *args,
             **kwargs
             ) -> None:
@@ -45,7 +47,6 @@ class PlayerCharacter(Character):
         """
         super().__init__(*args, **kwargs)
         self.interact_tile = self.destination.copy()
-        self.wand = wand
 
     def handle_events(self, events):
         """
@@ -61,6 +62,22 @@ class PlayerCharacter(Character):
                     case pg.K_SPACE:
                         if "idle" in self.appearance.current_anim:
                             print("INTERACT EVENT")
+                    ########## TEST EVENTS #############
+                    case pg.K_u:
+                        if "idle" in self.appearance.current_anim:
+                            print("EQUIP EVENT")
+                            self.inventory.equip(
+                            Cloak(
+                                sprite_sheet=SPRITES_DIR / self.species / "cloak" / "school_cloak"
+                                )
+                            )
+                            self.update_appearance()
+                    case pg.K_i:
+                        if "idle" in self.appearance.current_anim:
+                            print("UNEQUIP EVENT")
+                            self.inventory.unequip("cloak")
+                            self.update_appearance()
+                    ################# END TEST ############
             if event.type == pg.KEYUP:
                 match event.key:
                     case pg.K_UP | pg.K_w:
@@ -113,7 +130,6 @@ class PlayerCharacter(Character):
         if "idle" in self.appearance.current_anim:
             pg.draw.rect(screen, (0,255,0), camera.apply_rect(self.interact_tile), 2)
 
-
     def get_save_data(self):
         """
         Retrieve the data necessary to re-initialize the player.
@@ -123,8 +139,8 @@ class PlayerCharacter(Character):
         """
         return {
             "name" : self.name,
-            "wand" : self.wand,
             "x" : self.x,
             "y" : self.y,
+            "inventory" : self.inventory,
             "sprite_sheet" : self.appearance.sprite_sheet
         }
