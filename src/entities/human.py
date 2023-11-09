@@ -23,7 +23,6 @@ class Character(Entity):
     Attributes:
         name (str): The name of the character.
     """
-    base_sprite = SPRITES_DIR / "human" / "base_body.png"
     def __init__(self, name: str, inventory: CharacterInventory, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.name = name
