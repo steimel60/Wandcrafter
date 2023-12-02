@@ -147,14 +147,10 @@ class GameplayState(State):
                     self.sprite_groups["characters"],
                     self.sprite_groups["npcs"]
                     ]
-                inventory = CharacterInventory()
-                sprites = [SPRITES_DIR / "human" / "base_body.png"]
                 NPC(
                     name = tile_object.name_id,
                     x = tile_object.x,
                     y = tile_object.y,
-                    inventory = inventory,
-                    sprite_sheet = sprites,
                     groups = groups
                 )
         self.camera.open_map(self.map)
@@ -220,6 +216,7 @@ class GameplayState(State):
             save_dict: A dictionary containing saved game data.
         """
         player = PlayerCharacter(
+            data = save_dict["player_data"]["data"],
             name = save_dict["player_data"]["name"],
             x = save_dict["player_data"]["x"],
             y = save_dict["player_data"]["y"],
@@ -243,7 +240,7 @@ class GameplayState(State):
         """
         self.set_player(player)
         self.open_map("test")
-        name = self.player.name
+        name = self.player.data["name"]
         filename = f"{name}.pkl"
         i = 2
         while Path.exists(USER_GAME_DIR / filename):

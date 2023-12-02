@@ -138,7 +138,12 @@ class PlayerCharacter(Character):
             dict: A dictionary containing player data for re-initialization.
         """
         return {
-            "name" : self.name,
+            
+            "data" : {
+                "name" : self.data["name"],
+                "race" : "human", # FOR TESTING ONLY
+                "sprite" : "base", # FOR TESTING ONLY
+            },
             "x" : self.x,
             "y" : self.y,
             "inventory" : self.inventory,

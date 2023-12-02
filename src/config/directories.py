@@ -13,6 +13,7 @@ from config.game_settings import GAME_TITLE
 GAME_DIR = Path(__file__).parents[2]
 SOURCE_DIR = GAME_DIR / "src"
 ASSET_DIR = GAME_DIR / "assets"
+DATA_DIR = GAME_DIR / "data"
 CONFIG_DIR = SOURCE_DIR / "config"
 
 # ASSET DIRS

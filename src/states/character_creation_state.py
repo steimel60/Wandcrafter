@@ -124,10 +124,13 @@ class CharacterCreationState(State):
         # Create initialization dict
         kwargs = {
             "case" : "player",
-            "name" : self.options["Name"][self.attr_idx[0]],
             "x" : 32,
             "y" : 32,
-            "inventory" : inventory,
-            "sprite_sheet" : sprites
+            "data" : {
+                "race" : "human",
+                "sprite" : "base",
+                "name" : self.options["Name"][self.attr_idx[0]],
+                "inventory" : inventory
+            }
         }
         return kwargs

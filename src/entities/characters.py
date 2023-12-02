@@ -23,12 +23,11 @@ class Character(Entity):
     Attributes:
         name (str): The name of the character.
     """
-    base_sprite = SPRITES_DIR / "human" / "base_body.png"
-    def __init__(self, name: str, inventory: CharacterInventory, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.name = name
-        self.species = "human"
-        self.inventory = inventory
+    def __init__(self, data: dict, *args, **kwargs) -> None:
+        sprite_sheet = SPRITES_DIR / data["race"] / data["sprite"]
+        super().__init__(sprite_sheet=sprite_sheet, *args, **kwargs)
+        self.data = data
+        self.inventory = data["inventory"]
         self.speed = WALK_SPEED
         self.destination = self.hitbox.rect.copy()
 
@@ -71,12 +70,12 @@ class Character(Entity):
 
     def update_appearance(self):
         """Update the character's sprite based on their current inventory."""
-        base_sprite = SPRITES_DIR / self.species / "base_body.png"
-        layers = [base_sprite]
+        #base_sprite = SPRITES_DIR / self.species / "base_body.png"
+        layers = [self.base_sprite]
         for _, item in self.inventory.equipped.items():
             if item is not None:
                 layers.append(item)
-        layers.insert(0, base_sprite)
+        layers.insert(0, self.base_sprite)
         self.appearance.make_new_animation(layers)
 
     def draw(self, screen, camera):

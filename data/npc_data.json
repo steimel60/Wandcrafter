@@ -1,0 +1,47 @@
+{
+    "npcs": {
+        "mayor greenleaf" : {
+            "race": "Human",
+            "sprite" : "base",
+            "inventory": {
+                "equipped" : [
+                    {
+                        "cloak": {
+                            "type": "school_cloak",
+                            "color": "-"
+                        }
+                    }
+                ],
+                "other" : [
+                    {
+                        "wand": {
+                            "core": "Phoenix Feather",
+                            "wood": "Oak",
+                            "length": 12
+                        }
+                    }
+                ]
+            }
+        },
+        "dylan" : {
+            "race": "Human",
+            "sprite" : "base",
+            "inventory": {
+                "equipped" : [
+                    {
+                        "wand": {
+                            "core": "Dragon Heartstring",
+                            "wood": "Larch",
+                            "length": 13
+                        }
+                    }
+                ],
+                "other" : [
+                    {
+                    }
+                ]
+            }
+        }
+    }
+}
+  

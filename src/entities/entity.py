@@ -23,7 +23,7 @@ class Entity(pg.sprite.Sprite):
         super().__init__(*groups)
         self.x = x
         self.y = y
-        self.appearance = EntityAppearance(sprite_sheet=self.base_sprite)
+        self.appearance = EntityAppearance(sprite_sheet=sprite_sheet)
         self.hitbox = HitBox(x, y, self.appearance)
 
     @property

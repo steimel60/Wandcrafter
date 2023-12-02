@@ -85,16 +85,6 @@
   <object id="8" name="wall" x="1568" y="0" width="32" height="960"/>
   <object id="9" name="wall" x="32" y="0" width="1568" height="32"/>
   <object id="10" name="wall" x="32" y="928" width="1568" height="32"/>
-  <object id="11" name="NPC" x="672" y="224" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="0"/>
-    <property name="hair_color" type="int" value="1"/>
-    <property name="hair_id" type="int" value="1"/>
-    <property name="name_id" value="Loren"/>
-    <property name="path_id" type="int" value="1"/>
-    <property name="skin_id" type="int" value="0"/>
-   </properties>
-  </object>
   <object id="13" name="walk_path" x="672" y="160" width="32" height="288">
    <properties>
     <property name="path_id" type="int" value="1"/>
@@ -103,12 +93,6 @@
   <object id="14" name="walk_path" x="320" y="256" width="256" height="32">
    <properties>
     <property name="path_id" type="int" value="2"/>
-   </properties>
-  </object>
-  <object id="15" name="NPC" x="384" y="256" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="0"/>
-    <property name="name_id" value="DJ"/>
    </properties>
   </object>
   <object id="23" name="wall" x="224" y="128" width="32" height="32"/>
@@ -120,12 +104,12 @@
     <property name="to_level" value="indoor1"/>
    </properties>
   </object>
-  <object id="27" name="NPC" x="128" y="384" width="32" height="32">
+  <object id="27" name="NPC" x="96" y="224" width="32" height="32">
    <properties>
     <property name="dir" type="int" value="0"/>
     <property name="hair_color" type="int" value="0"/>
     <property name="hair_id" type="int" value="1"/>
-    <property name="name_id" value="Logan"/>
+    <property name="name_id" value="mayor greenleaf"/>
     <property name="path_id" type="int" value="-1"/>
     <property name="skin_id" type="int" value="0"/>
    </properties>
@@ -137,36 +121,9 @@
     <property name="to_level" value="BookShop"/>
    </properties>
   </object>
-  <object id="29" name="NPC" x="64" y="96" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="0"/>
-    <property name="hair_color" type="int" value="3"/>
-    <property name="hair_id" type="int" value="1"/>
-    <property name="name_id" value="Ted"/>
-    <property name="path_id" type="int" value="-1"/>
-    <property name="skin_id" type="int" value="1"/>
-   </properties>
-  </object>
   <object id="30" name="walk_path" x="224" y="448" width="512" height="128">
    <properties>
     <property name="path_id" type="int" value="2"/>
-   </properties>
-  </object>
-  <object id="31" name="NPC" x="320" y="512" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="2"/>
-    <property name="name_id" value="Random"/>
-   </properties>
-  </object>
-  <object id="33" name="random_spawn" x="64" y="576" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="0"/>
-   </properties>
-  </object>
-  <object id="36" name="Duelist" x="192" y="224" width="32" height="32">
-   <properties>
-    <property name="dir" type="int" value="2"/>
-    <property name="name_id" value="Random"/>
    </properties>
   </object>
  </objectgroup>
