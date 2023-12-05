@@ -83,3 +83,23 @@ class Character(Entity):
         ######### DEBUG RECTS ###########
         # Draw Destination rect
         pg.draw.rect(screen, (255,255,0), camera.apply_rect(self.destination), 2)
+
+    def get_save_data(self):
+        """
+        Retrieve the data necessary to re-initialize the player.
+
+        Returns:
+            dict: A dictionary containing player data for re-initialization.
+        """
+        return {
+            
+            "data" : {
+                "name" : self.data["name"],
+                "race" : "human", # FOR TESTING ONLY
+                "sprite" : "base", # FOR TESTING ONLY
+            },
+            "x" : self.x,
+            "y" : self.y,
+            "inventory" : self.inventory,
+            "sprite_sheet" : self.appearance.sprite_sheet
+        }

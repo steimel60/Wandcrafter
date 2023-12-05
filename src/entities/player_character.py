@@ -137,15 +137,4 @@ class PlayerCharacter(Character):
         Returns:
             dict: A dictionary containing player data for re-initialization.
         """
-        return {
-            
-            "data" : {
-                "name" : self.data["name"],
-                "race" : "human", # FOR TESTING ONLY
-                "sprite" : "base", # FOR TESTING ONLY
-            },
-            "x" : self.x,
-            "y" : self.y,
-            "inventory" : self.inventory,
-            "sprite_sheet" : self.appearance.sprite_sheet
-        }
+        return super().get_save_data()
