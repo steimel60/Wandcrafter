@@ -10,7 +10,8 @@ from maps.trees import Tree, MagicTree
 import pygame as pg
 import pytmx
 from config.directories import MAP_DIR
-from entities.obstacles import Obstacle
+from maps.obstacles import Obstacle, AnimatedObstacle
+from maps.animated_tiles import AnimatedTile
 
 class TiledMap:
     """
@@ -47,28 +48,37 @@ class TiledMap:
         self.width = tm.width * tm.tilewidth
         self.height =tm.height * tm.tileheight
         self.tmxdata = tm
+        self.items = {
+            'animated' : list(),
+            'tiles' : list()
+        }
         self.image = self.make_map()
         self.rect = self.image.get_rect()
-        self.items = {
-            'animated' : list()
-        }
         self.obstacles = self.get_obstacles()
 
     def render(self, surface):
         """Create the image for the map"""
-        ti = self.tmxdata.get_tile_image_by_gid
         for layer in self.tmxdata.visible_layers:
-            print(layer)
-            print({pprint(vars(layer))})
-            if isinstance(layer, pytmx.TiledTileLayer):
+            if isinstance(layer, pytmx.TiledTileLayer): # If a tile layer (not an object layer)
                 for x, y, gid in layer:
-                    tile = ti(gid)
-                    if tile:
-                        print(tile, isinstance(tile, pg.Surface))
-                        surface.blit(
-                            tile,
-                            (x * self.tmxdata.tilewidth, y * self.tmxdata.tileheight)
+                    is_animated = False
+                    map_x = x * self.tmxdata.tilewidth # x location of tile adjusted to map size
+                    map_y = y * self.tmxdata.tileheight # y location of tile adjusted to map size
+                    if self.tmxdata.get_tile_properties_by_gid(gid):
+                        properties = self.tmxdata.get_tile_properties_by_gid(gid)
+                        if "frames" in properties: # Check if tile is animated
+                            is_animated = True
+                            rect = pg.Rect(
+                                map_x,
+                                map_y,
+                                properties['width'],
+                                properties['height']
                             )
+                            frames = self.load_animation_frames(properties["frames"])
+                            self.items['tiles'].append(AnimatedTile(frames, rect))
+                    image = self.tmxdata.get_tile_image_by_gid(gid)
+                    if image and not is_animated:
+                        surface.blit(image, (map_x, map_y))
 
     def make_map(self):
         """Creates a PyGame surface that can be Blit to the screen"""
@@ -80,29 +90,12 @@ class TiledMap:
         """Get a list of static obstacles in the map."""
         obstacles = []
         for tile_object in self.tmxdata.objects:
-            print("has frames", "frames" in tile_object.properties)
-            if tile_object.name == "wall":
-                obstacles.append(
-                    Obstacle(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
-                )
-            if tile_object.name == "MagicTree":
-                print("hasattr",hasattr(tile_object, "properties"))
-                print("has frames > 1")
-                print(f"\nI FOUND A MAGIC TREE\n{pprint(vars(tile_object))}")
-                self.items['animated'].append(
-                    tree := MagicTree(
-                        [
-                            self.tmxdata.get_tile_image_by_gid(
-                                x.gid
-                                ) for x in tile_object.properties['frames']
-                        ],
-                        tile_object.x,
-                        tile_object.y,
-                        tile_object.width,
-                        tile_object.height
-                    )
-                )
-                obstacles.append(tree)
+            if "frames" in tile_object.properties:
+                item = self.create_animated_object(tile_object)
+            elif tile_object.name == "wall":
+                rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+                item = Obstacle(rect)
+            obstacles.append(item)
         return obstacles
 
     def draw(self, screen, camera):
@@ -114,8 +107,45 @@ class TiledMap:
         # Draw static image
         screen.blit(self.image, camera.apply(self))
         # Draw animated images
+        for tile in self.items['tiles']:
+            tile.draw(screen, camera)
         for item in self.items['animated']:
             item.draw(screen, camera)
         # Draw debug boxes
         for obstacle in self.obstacles:
             pg.draw.rect(screen, (255,255,255), camera.apply(obstacle), 2)
+
+    def update(self):
+        for tile in self.items['tiles']:
+            tile.update()
+        for item in self.items['animated']:
+            item.update()
+
+    def load_animation_frames(self, frames) -> list:
+        """Create the pygame surface from the AnimationFrame objects passed in the init function.
+        
+        Returns: A list of tuples (image: pg.Surface, duration: int)
+        """
+        loaded_frames = []
+        for frame in frames:
+            gid = frame.gid
+            image = self.tmxdata.get_tile_image_by_gid(gid)
+            duration = frame.duration
+            loaded_frames.append((image, duration))
+        return loaded_frames
+
+    def create_animated_object(self, tile_object) -> AnimatedObstacle:
+        """Creates animated objects from the map and stores them in the map data to be updated later."""
+        rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+        if tile_object.name == "MagicTree":
+            item = MagicTree(
+                    frames = self.load_animation_frames(tile_object.properties['frames']),
+                    rect = rect
+                )
+        else:
+            item = AnimatedObstacle(
+                frames = self.load_animation_frames(tile_object.properties['frames']),
+                rect = rect
+            )
+        self.items['animated'].append(item)
+        return item
