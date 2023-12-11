@@ -4,6 +4,8 @@ TiledMap Module
 This module defines the `TiledMap` class, which represents a Tiled map loaded from a TMX file.
 It provides functionality to render and draw the map on a Pygame surface.
 """
+from pprint import pprint
+from maps.trees import Tree, MagicTree
 
 import pygame as pg
 import pytmx
@@ -47,16 +49,22 @@ class TiledMap:
         self.tmxdata = tm
         self.image = self.make_map()
         self.rect = self.image.get_rect()
+        self.items = {
+            'animated' : list()
+        }
         self.obstacles = self.get_obstacles()
 
     def render(self, surface):
         """Create the image for the map"""
         ti = self.tmxdata.get_tile_image_by_gid
         for layer in self.tmxdata.visible_layers:
+            print(layer)
+            print({pprint(vars(layer))})
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
                     tile = ti(gid)
                     if tile:
+                        print(tile, isinstance(tile, pg.Surface))
                         surface.blit(
                             tile,
                             (x * self.tmxdata.tilewidth, y * self.tmxdata.tileheight)
@@ -72,10 +80,29 @@ class TiledMap:
         """Get a list of static obstacles in the map."""
         obstacles = []
         for tile_object in self.tmxdata.objects:
+            print("has frames", "frames" in tile_object.properties)
             if tile_object.name == "wall":
                 obstacles.append(
                     Obstacle(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
                 )
+            if tile_object.name == "MagicTree":
+                print("hasattr",hasattr(tile_object, "properties"))
+                print("has frames > 1")
+                print(f"\nI FOUND A MAGIC TREE\n{pprint(vars(tile_object))}")
+                self.items['animated'].append(
+                    tree := MagicTree(
+                        [
+                            self.tmxdata.get_tile_image_by_gid(
+                                x.gid
+                                ) for x in tile_object.properties['frames']
+                        ],
+                        tile_object.x,
+                        tile_object.y,
+                        tile_object.width,
+                        tile_object.height
+                    )
+                )
+                obstacles.append(tree)
         return obstacles
 
     def draw(self, screen, camera):
@@ -84,6 +111,11 @@ class TiledMap:
         Args:
             screen (pygame.Surface): The pygame surface to draw on.
         """
+        # Draw static image
         screen.blit(self.image, camera.apply(self))
+        # Draw animated images
+        for item in self.items['animated']:
+            item.draw(screen, camera)
+        # Draw debug boxes
         for obstacle in self.obstacles:
             pg.draw.rect(screen, (255,255,255), camera.apply(obstacle), 2)

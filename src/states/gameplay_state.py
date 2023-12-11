@@ -66,6 +66,8 @@ class GameplayState(State):
                 tile_map = self.map,
                 sprite_group = self.sprite_groups["all_sprites"]
                 )
+        for sprite in self.map.items['animated']:
+            sprite.update()
         self.camera.update(self.player.hitbox)
 
     def draw(self, screen, *args):
