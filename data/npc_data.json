@@ -3,6 +3,13 @@
         "mayor greenleaf" : {
             "race": "Human",
             "sprite" : "base",
+            "location" : {
+                "map": "test",
+                "position" : {
+                    "x" : 96,
+                    "y" : 224
+                }
+            },
             "inventory": {
                 "equipped" : [
                     {
@@ -26,6 +33,13 @@
         "dylan" : {
             "race": "Human",
             "sprite" : "base",
+            "location" : {
+                "map": "-",
+                "position" : {
+                    "x" : 32,
+                    "y" : 32
+                }
+            },
             "inventory": {
                 "equipped" : [
                     {

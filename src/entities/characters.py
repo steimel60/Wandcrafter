@@ -23,19 +23,25 @@ class Character(Entity):
     Attributes:
         name (str): The name of the character.
     """
-    def __init__(self, data: dict, *args, **kwargs) -> None:
+    def __init__(self, data: dict) -> None:
         sprite_sheet = SPRITES_DIR / data["race"] / data["sprite"]
-        super().__init__(sprite_sheet=sprite_sheet, *args, **kwargs)
+        super().__init__(
+            sprite_sheet=sprite_sheet,
+            x = data["location"]["position"]["x"],
+            y = data["location"]["position"]["y"]
+        )
         self.data = data
         self.inventory = data["inventory"]
         self.speed = WALK_SPEED
         self.destination = self.hitbox.rect.copy()
 
-    def change_destination(self, x, y):
+    def change_destination(self, x, y, obstacles):
         """Change the character's target destination."""
         if self.hitbox.rect == self.destination:
             self.destination.x += x
             self.destination.y += y
+        if self.destination.collidelist(obstacles) != -1:
+            self.destination = self.hitbox.rect.copy()
 
     def move(self, speed):
         """Move towards the character's target destination.
@@ -53,29 +59,20 @@ class Character(Entity):
             self.change_position(speed, 0)
         self.hitbox.move(self.x, self.y)
 
-    def update(self, **kwargs):
+    def update(self):
         """Update the character's position and appearance."""
         super().update()
-        if self.hitbox.rect != self.destination: # If attempting to move
-            tile_map = kwargs.get("tile_map") # Get static objects
-            sprite_group = kwargs.get("sprite_group") # Get dynamic objects
-            other_sprites = [sprite.hitbox for sprite in sprite_group if sprite != self]
-            # Check for collision with static objects
-            if self.destination.collidelist(tile_map.obstacles) != -1:
-                self.destination = self.hitbox.rect.copy()
-            # Check for collision with dynamic objects
-            elif self.destination.collidelist(other_sprites) != -1:
-                self.destination = self.hitbox.rect.copy()
-            else: self.move(self.speed)
+        if self.hitbox.rect != self.destination: # If moving
+            self.move(self.speed)
 
     def update_appearance(self):
         """Update the character's sprite based on their current inventory."""
-        #base_sprite = SPRITES_DIR / self.species / "base_body.png"
-        layers = [self.base_sprite]
+        base_sprite = SPRITES_DIR / self.data["race"] / self.data["sprite"]
+        layers = [base_sprite]
         for _, item in self.inventory.equipped.items():
             if item is not None:
                 layers.append(item)
-        layers.insert(0, self.base_sprite)
+        layers.insert(0, base_sprite)
         self.appearance.make_new_animation(layers)
 
     def draw(self, screen, camera):
@@ -92,14 +89,28 @@ class Character(Entity):
             dict: A dictionary containing player data for re-initialization.
         """
         return {
-            
-            "data" : {
-                "name" : self.data["name"],
-                "race" : "human", # FOR TESTING ONLY
-                "sprite" : "base", # FOR TESTING ONLY
+            "race": self.data["race"],
+            "sprite" : self.data["sprite"],
+            "location" : {
+                "map": "-",
+                "position" : {
+                    "x" : self.x,
+                    "y" : self.y
+                }
             },
-            "x" : self.x,
-            "y" : self.y,
-            "inventory" : self.inventory,
-            "sprite_sheet" : self.appearance.sprite_sheet
+            "inventory": { # MAKE WAY TO SAVE INVENTORY LATER
+                "equipped" : [
+                    {
+                        "wand": {
+                            "core": "Dragon Heartstring",
+                            "wood": "Larch",
+                            "length": 13
+                        }
+                    }
+                ],
+                "other" : [
+                    {
+                    }
+                ]
+            }
         }

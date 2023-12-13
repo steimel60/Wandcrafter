@@ -13,10 +13,10 @@ class NPC(Character):
     Entity's that can move around and be interacted with. May
     or may not have dialog or be involved in quests.
     """
-    def __init__(self, name, *args, **kwargs) -> None:
+    def __init__(self, name) -> None:
         # pylint: disable=useless-super-delegation
         self.data = self.get_npc_data(name)
-        super().__init__(self.data, *args, **kwargs)
+        super().__init__(self.data)
 
     def get_npc_data(self, name: str) -> dict:
         """Retrieves specific npc data from json file."""

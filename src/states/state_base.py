@@ -17,14 +17,14 @@ class State:
         """Initialize a game state."""
         pass  # pylint: disable=unnecessary-pass
 
-    def handle_events(self, events, *args):
+    def handle_events(self, events):
         """Handle events for the game state."""
         pass  # pylint: disable=unnecessary-pass
 
-    def update(self, *args):
+    def update(self):
         """Update the game state."""
         pass  # pylint: disable=unnecessary-pass
 
-    def draw(self, screen, *args):
+    def draw(self, screen):
         """Draw the game state."""
         pass  # pylint: disable=unnecessary-pass

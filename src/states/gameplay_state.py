@@ -5,18 +5,18 @@ This module defines the `GameplayState` class, which represents the game state
 where the player is actively playing the game.
 """
 
+import json
 from pathlib import Path
 import pygame as pg
 from states.state_base import State
 from config.colors import MYSTIC_BLUE, BLACK
 from config.game_settings import TILESIZE
-from config.directories import USER_GAME_DIR, SPRITES_DIR
+from config.directories import USER_GAME_DIR, DATA_DIR
 from utils.save_system import save_game_data
 from entities.player_character import PlayerCharacter
 from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
-from items.inventory import CharacterInventory
 
 class GameplayState(State):
     """
@@ -42,13 +42,18 @@ class GameplayState(State):
         self.sprite_groups = self.init_sprite_groups()
         self.quest_data = None
 
-    def handle_events(self, events, *args):
+    def handle_events(self, events):
         """Handle events in the gameplay state.
 
         Args:
             events (list): A list of pygame events to process.
         """
-        ####### TESTING SAVE FUNCTIONALITY, MAKE BETTER EVENT CATCH LATER #######
+        self.handle_global_events(events)
+        self.handle_player_events(events)
+        self.handle_continuous_player_movement()
+
+    def handle_global_events(self, events):
+        """Handle global events."""
         for event in events:
             if event.type == pg.KEYDOWN:
                 match event.key:
@@ -56,20 +61,59 @@ class GameplayState(State):
                         self.save_game()
             if event.type == pg.VIDEORESIZE:
                 self.camera.change_screen_size()
-        ###########################    END TEST    ###############################
-        self.player.handle_events(events)
 
-    def update(self, *args):
+    def handle_player_events(self, events):
+        """Logic for key up/down events involving the player character."""
+        for event in events:
+            if event.type == pg.KEYDOWN:
+                match event.key:
+                    case pg.K_SPACE:
+                        if "idle" in self.player.appearance.current_anim:
+                            print("INTERACT EVENT")
+                            self.player.interact(self.map.obstacles)
+                    ########## TEST EVENTS #############
+                    case pg.K_u:
+                        if "idle" in self.player.appearance.current_anim:
+                            print("EQUIP EVENT")
+                    case pg.K_i:
+                        if "idle" in self.player.appearance.current_anim:
+                            print("UNEQUIP EVENT")
+                    ################# END TEST ############
+            if event.type == pg.KEYUP:
+                match event.key:
+                    case pg.K_UP | pg.K_w:
+                        self.player.set_animation("idle_up")
+                    case pg.K_DOWN | pg.K_s:
+                        self.player.set_animation("idle_down")
+                    case pg.K_LEFT | pg.K_a:
+                        self.player.set_animation("idle_left")
+                    case pg.K_RIGHT | pg.K_d:
+                        self.player.set_animation("idle_right")
+
+    def handle_continuous_player_movement(self):
+        """Handle continuous player movement based on currently pressed keys."""
+        keys = pg.key.get_pressed()
+        if keys[pg.K_UP] or keys[pg.K_w]:
+            self.player.set_animation("walk_up")
+            self.player.change_destination(0, -TILESIZE, self.map.obstacles)
+        elif keys[pg.K_DOWN] or keys[pg.K_s]:
+            self.player.set_animation("walk_down")
+            self.player.change_destination(0, TILESIZE, self.map.obstacles)
+        elif keys[pg.K_LEFT] or keys[pg.K_a]:
+            self.player.set_animation("walk_left")
+            self.player.change_destination(-TILESIZE, 0, self.map.obstacles)
+        elif keys[pg.K_RIGHT] or keys[pg.K_d]:
+            self.player.set_animation("walk_right")
+            self.player.change_destination(TILESIZE, 0, self.map.obstacles)
+
+    def update(self):
         """Update logic for the gameplay state."""
         for sprite in self.sprite_groups["characters"]:
-            sprite.update(
-                tile_map = self.map,
-                sprite_group = self.sprite_groups["all_sprites"]
-                )
+            sprite.update()
         self.map.update()
         self.camera.update(self.player.hitbox)
 
-    def draw(self, screen, *args):
+    def draw(self, screen):
         """Draw the gameplay on the screen.
 
         Args:
@@ -78,7 +122,6 @@ class GameplayState(State):
         screen.fill(MYSTIC_BLUE)
         self.map.draw(screen, self.camera)
         self.draw_grid(screen)
-        #self.player.draw(screen, self.camera)
         for sprite in self.sprite_groups["all_sprites"]:
             sprite.draw(screen, self.camera)
 
@@ -97,10 +140,10 @@ class GameplayState(State):
         them to be easily updated all at once.
         """
         return {
-            "all_sprites" : pg.sprite.Group(),
-            "characters" : pg.sprite.Group(),
-            "player" : pg.sprite.Group(),
-            "npcs" : pg.sprite.Group()
+            "all_sprites" : [],
+            "characters" : [],
+            "player" : [],
+            "npcs" : []
         }
 
     def set_filepath(self, new_path: Path):
@@ -140,20 +183,21 @@ class GameplayState(State):
         Args:
             map_name (str): The name of the map to load.
         """
+        self.init_sprite_groups()
+        self.sprite_groups["all_sprites"].append(self.player)
+        self.sprite_groups["characters"].append(self.player)
+        self.sprite_groups["npcs"].append(self.player)
         self.map = TiledMap(map_name)
-        for tile_object in self.map.tmxdata.objects:
-            if tile_object.name.lower() == "npc":
-                groups = [
-                    self.sprite_groups["all_sprites"],
-                    self.sprite_groups["characters"],
-                    self.sprite_groups["npcs"]
-                    ]
-                NPC(
-                    name = tile_object.name_id,
-                    x = tile_object.x,
-                    y = tile_object.y,
-                    groups = groups
-                )
+        with open(DATA_DIR / "npc_data.json", encoding="utf-8") as f:
+            npc_data = json.load(f)
+        npc_data = npc_data["npcs"]
+        for npc_id in npc_data:
+            if npc_data[npc_id]["location"]["map"] == map_name:
+                npc = NPC(npc_id)
+                self.map.obstacles.append(npc)
+                self.sprite_groups["all_sprites"].append(npc)
+                self.sprite_groups["characters"].append(npc)
+                self.sprite_groups["npcs"].append(npc)
         self.camera.open_map(self.map)
 
     def load_data(self, data: dict, tags: list[str]) -> None:
@@ -180,27 +224,14 @@ class GameplayState(State):
             case "player":
                 if "NEW_GAME" in tags:
                     self.new_game(
-                        PlayerCharacter(
-                            **data,
-                            groups = [
-                                self.sprite_groups["all_sprites"],
-                                self.sprite_groups["characters"],
-                                self.sprite_groups["player"]
-                                ]
-                            )
+                        PlayerCharacter(data)
                     )
-                else: self.load_player(
-                    PlayerCharacter(
-                            **data,
-                            groups = [
-                                self.sprite_groups["all_sprites"],
-                                self.sprite_groups["characters"],
-                                self.sprite_groups["player"]
-                                ]
-                            )
+                else:
+                    self.load_player(
+                        PlayerCharacter(data)
                     )
             case "saved_game": self.load_game(data)
-            case _: print("Case not recognized.")
+            case _: print("Data load case not recognized.")
 
     def load_player(self, player):
         """Load a player entity.
@@ -216,19 +247,7 @@ class GameplayState(State):
         Args:
             save_dict: A dictionary containing saved game data.
         """
-        player = PlayerCharacter(
-            data = save_dict["player_data"]["data"],
-            name = save_dict["player_data"]["name"],
-            x = save_dict["player_data"]["x"],
-            y = save_dict["player_data"]["y"],
-            inventory = save_dict["player_data"]["inventory"],
-            sprite_sheet = save_dict["player_data"]["sprite_sheet"],
-            groups = [
-                self.sprite_groups["all_sprites"],
-                self.sprite_groups["characters"],
-                self.sprite_groups["player"]
-                ]
-        )
+        player = PlayerCharacter(data = save_dict["player_data"])
         self.set_player(player)
         self.open_map(save_dict["map"])
         self.set_filepath(save_dict["file_path"])

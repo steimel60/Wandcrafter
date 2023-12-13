@@ -8,19 +8,19 @@ from utils.asset_management import get_anims_in_sprite_sheet, get_sprite_data
 
 from entities.animation import Animation
 
-class Entity(pg.sprite.Sprite):
+class Entity:
     """Entity class.
     
     This class represents anything that is drawn in game.
     """
     def __init__(
             self,
-            groups: list[pg.sprite.Group],
+            #groups: list[pg.sprite.Group],
             x: int,
             y: int,
             sprite_sheet: list[Path]
             ) -> None:
-        super().__init__(*groups)
+        #super().__init__(*groups)
         self.x = x
         self.y = y
         self.appearance = EntityAppearance(sprite_sheet=sprite_sheet)
@@ -41,7 +41,7 @@ class Entity(pg.sprite.Sprite):
         self.appearance.draw(screen, self.x + camera.rect.x, self.y + camera.rect.y)
         self.hitbox.draw(screen, camera)
 
-    def update(self, **_kwargs) -> None:
+    def update(self) -> None:
         """Update the entity's animation."""
         self.appearance.update()
 

@@ -35,7 +35,7 @@ class MainMenuState(State):
         self.options = ["New Game", "Load Game"]
         self.font = pg.font.Font(None, 36)
 
-    def handle_events(self, events, *args):
+    def handle_events(self, events):
         """Handle events in the main menu state.
 
         Processes keyboard events to navigate and select options in the main menu.
@@ -63,7 +63,7 @@ class MainMenuState(State):
                             response = self.load_existing_game()
         return response
 
-    def draw(self, screen, *args):
+    def draw(self, screen):
         """Draw the main menu on the screen.
 
         Renders the main menu interface, including the game title and menu options.

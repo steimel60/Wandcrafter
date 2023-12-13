@@ -33,8 +33,7 @@ class PlayerCharacter(Character):
     """
     def __init__(
             self,
-            *args,
-            **kwargs
+            data
             ) -> None:
         """
         Initialize a player entity.
@@ -45,66 +44,11 @@ class PlayerCharacter(Character):
             x (int): The initial x coordinate of the player. Defaults to 0.
             y (int): The initial y coordinate of the player. Defaults to 0.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(data)
         self.interact_tile = self.destination.copy()
 
-    def handle_events(self, events):
-        """
-        Handle player input events.
-
-        Args:
-            events (list): A list of pygame events to process.
-        """
-        # Triggered Events
-        for event in events:
-            if event.type == pg.KEYDOWN:
-                match event.key:
-                    case pg.K_SPACE:
-                        if "idle" in self.appearance.current_anim:
-                            print("INTERACT EVENT")
-                    ########## TEST EVENTS #############
-                    case pg.K_u:
-                        if "idle" in self.appearance.current_anim:
-                            print("EQUIP EVENT")
-                            self.inventory.equip(
-                            Cloak(
-                                sprite_sheet=SPRITES_DIR / self.species / "cloak" / "school_cloak"
-                                )
-                            )
-                            self.update_appearance()
-                    case pg.K_i:
-                        if "idle" in self.appearance.current_anim:
-                            print("UNEQUIP EVENT")
-                            self.inventory.unequip("cloak")
-                            self.update_appearance()
-                    ################# END TEST ############
-            if event.type == pg.KEYUP:
-                match event.key:
-                    case pg.K_UP | pg.K_w:
-                        self.set_animation("idle_up")
-                    case pg.K_DOWN | pg.K_s:
-                        self.set_animation("idle_down")
-                    case pg.K_LEFT | pg.K_a:
-                        self.set_animation("idle_left")
-                    case pg.K_RIGHT | pg.K_d:
-                        self.set_animation("idle_right")
-        # Continuous Events
-        keys = pg.key.get_pressed()
-        if (keys[pg.K_UP] or keys[pg.K_w]):
-            self.set_animation("walk_up")
-            self.change_destination(0, -TILESIZE)
-        elif (keys[pg.K_DOWN] or keys[pg.K_s]):
-            self.set_animation("walk_down")
-            self.change_destination(0, TILESIZE)
-        elif (keys[pg.K_LEFT] or keys[pg.K_a]):
-            self.set_animation("walk_left")
-            self.change_destination(-TILESIZE, 0)
-        elif (keys[pg.K_RIGHT] or keys[pg.K_d]):
-            self.set_animation("walk_right")
-            self.change_destination(TILESIZE, 0)
-
-    def update(self, *args, **kwargs):
-        super().update(*args, **kwargs)
+    def update(self):
+        super().update()
         if "idle" in self.appearance.current_anim:
             self.update_interaction_rect()
 
@@ -123,6 +67,14 @@ class PlayerCharacter(Character):
         elif "right" in anim_name:
             self.interact_tile.x = self.destination.x + TILESIZE
             self.interact_tile.y = self.destination.y
+
+    def interact(self, map_objects):
+        """Interact with map obstacles or other sprites."""
+        print("INTERACT METHOD")
+        print(idx := self.interact_tile.collidelist(map_objects))
+        if idx != -1:
+            print(map_objects[idx])
+        else: print("Nothing to interact with!")
 
     def draw(self, screen: pg.Surface, camera):
         super().draw(screen, camera)

@@ -36,7 +36,7 @@ class CharacterCreationState(State):
         self.current_attr = 0
         self.attr_idx = [0 for key in self.options]
 
-    def handle_events(self, events, *args):
+    def handle_events(self, events):
         """
         Handle events in the character creation state.
 
@@ -76,7 +76,7 @@ class CharacterCreationState(State):
                             return ["CHANGE_STATE", "main_menu"]
             return None
 
-    def draw(self, screen, *args):
+    def draw(self, screen):
         """Draw the Character Creation menu on the screen.
 
         Args:
@@ -116,21 +116,37 @@ class CharacterCreationState(State):
         inventory = CharacterInventory()
         inventory.equip(cloak)
         inventory.add_item(wand)
-        sprites = [SPRITES_DIR / species / "base_body.png"]
+        sprites = [SPRITES_DIR / species / "base.png"]
         for _, item in inventory.equipped.items():
             if item:
                 sprites.append(item.sprite_sheet)
                 print(item.sprite_sheet)
-        # Create initialization dict
-        kwargs = {
-            "case" : "player",
-            "x" : 32,
-            "y" : 32,
-            "data" : {
-                "race" : "human",
-                "sprite" : "base",
-                "name" : self.options["Name"][self.attr_idx[0]],
-                "inventory" : inventory
+        data = {
+            "case" : "player",  # Tells state manager passing player data
+            "name" : self.options["Name"][self.attr_idx[0]],
+            "race": species,
+            "sprite" : "base",
+            "location" : {
+                "map": "-",
+                "position" : {
+                    "x" : 32,
+                    "y" : 32
+                }
+            },
+            "inventory": {
+                "equipped" : [
+                    {
+                        "wand": {
+                            "core": "Dragon Heartstring",
+                            "wood": "Larch",
+                            "length": 13
+                        }
+                    }
+                ],
+                "other" : [
+                    {
+                    }
+                ]
             }
         }
-        return kwargs
+        return data
