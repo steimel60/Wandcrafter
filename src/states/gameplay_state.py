@@ -84,7 +84,10 @@ class GameplayState(State):
                             print("UNEQUIP EVENT")
                     case pg.K_m:
                         box = MessageBox(
-                            "Congrats, you hit 'M'! This is a super duper long message just to test the capabilities of the message box state. it should wrap the text in a message box and also close when you hit space."
+                            [
+                                "Congrats, you hit 'M'! This is a super duper long message just to test the capabilities of the message box state. it should wrap the text in a message box and also close when you hit space. It should now also create slides for a super long message like this one. Like you'll probaby have to hit space to have seen this.",
+                                "Surprise! 2 Messages work (:"
+                            ]                            
                         )
                         return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
