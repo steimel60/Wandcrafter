@@ -111,10 +111,10 @@ class CharacterCreationState(State):
                 core = WandCore(self.options["Wand Core"][self.attr_idx[2]]),
                 length = WandLength(self.options["Wand Length (inches)"][self.attr_idx[3]])
             )
-        cloak = Cloak(sprite_sheet = SPRITES_DIR / species / "cloak" / "school_cloak")
+        #cloak = Cloak(sprite_sheet = SPRITES_DIR / species / "cloak" / "school_cloak")
         # Add options to inventory
         inventory = CharacterInventory()
-        inventory.equip(cloak)
+        #inventory.equip(cloak)
         inventory.add_item(wand)
         sprites = [SPRITES_DIR / species / "base.png"]
         for _, item in inventory.equipped.items():

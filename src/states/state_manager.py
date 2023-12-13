@@ -12,6 +12,7 @@ import pygame as pg
 from states.main_menu_state import MainMenuState
 from states.gameplay_state import GameplayState
 from states.character_creation_state import CharacterCreationState
+from states.message_box_state import MessageBoxState
 
 class StateManager:
     """Manages the game's state transitions and state-specific functions.
@@ -77,6 +78,11 @@ class StateManager:
             new_state (str): The name of the state to transition to.
             tags (list, optional): Additional tags or labels associated with the state transition.
         """
+        if new_state == "message_box":
+            self.state_dict["message_box"] = MessageBoxState(
+                _tags[0],
+                self.current_state
+            )
         if new_state in self.state_dict:
             self.current_state = new_state
         else:

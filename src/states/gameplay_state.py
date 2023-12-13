@@ -18,6 +18,9 @@ from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
 
+### TEST ONLLY ###
+from gui.message_box import MessageBox
+
 class GameplayState(State):
     """
     GameplayState Class
@@ -49,8 +52,9 @@ class GameplayState(State):
             events (list): A list of pygame events to process.
         """
         self.handle_global_events(events)
-        self.handle_player_events(events)
+        response = self.handle_player_events(events)
         self.handle_continuous_player_movement()
+        return response
 
     def handle_global_events(self, events):
         """Handle global events."""
@@ -70,7 +74,7 @@ class GameplayState(State):
                     case pg.K_SPACE:
                         if "idle" in self.player.appearance.current_anim:
                             print("INTERACT EVENT")
-                            self.player.interact(self.map.obstacles)
+                            return self.player.interact(self.map.obstacles)
                     ########## TEST EVENTS #############
                     case pg.K_u:
                         if "idle" in self.player.appearance.current_anim:
@@ -78,6 +82,11 @@ class GameplayState(State):
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
                             print("UNEQUIP EVENT")
+                    case pg.K_m:
+                        box = MessageBox(
+                            "Congrats, you hit 'M'! This is a super duper long message just to test the capabilities of the message box state. it should wrap the text in a message box and also close when you hit space."
+                        )
+                        return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
             if event.type == pg.KEYUP:
                 match event.key:

@@ -7,6 +7,7 @@ This module defines the `PlayerCharacter` class, which represents a player chara
 import pygame as pg
 from entities.characters import Character
 from config.game_settings import TILESIZE
+from gui.message_box import MessageBox
 
 ##### FOR TESTS
 from items.cloak import Cloak
@@ -70,11 +71,12 @@ class PlayerCharacter(Character):
 
     def interact(self, map_objects):
         """Interact with map obstacles or other sprites."""
-        print("INTERACT METHOD")
-        print(idx := self.interact_tile.collidelist(map_objects))
+        idx = self.interact_tile.collidelist(map_objects)
         if idx != -1:
-            print(map_objects[idx])
-        else: print("Nothing to interact with!")
+            if hasattr(map_objects[idx], "interact"):
+                return map_objects[idx].interact()
+            return ["CHANGE_STATE", "message_box", MessageBox("You can't interact with that...")]
+        return ["CHANGE_STATE", "message_box", MessageBox("There's nothing there...")]
 
     def draw(self, screen: pg.Surface, camera):
         super().draw(screen, camera)

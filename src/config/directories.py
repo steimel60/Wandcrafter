@@ -21,6 +21,7 @@ SPRITES_DIR = ASSET_DIR / "sprites"
 MAP_DIR = ASSET_DIR / "maps"
 FONT_DIR = ASSET_DIR / "fonts"
 MUSIC_DIR = ASSET_DIR / "music"
+GUI_DIR = ASSET_DIR / "gui"
 
 # User Directories
 USER_HOME_DIR = Path().home() # On windows C:/Users/user

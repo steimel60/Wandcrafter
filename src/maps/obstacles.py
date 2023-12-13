@@ -1,11 +1,16 @@
 """Obstacle Class"""
 import pygame as pg
 from config.game_settings import FPS
+from gui.message_box import MessageBox
 
 class Obstacle:
     """A parent class for static map objects."""
     def __init__(self, rect: pg.Rect):
         self.rect = rect
+
+    def interact(self):
+        box = MessageBox(f"It's just a {type(self)}...")
+        return ["CHANGE_STATE", "message_box", box]
 
 class AnimatedObstacle(Obstacle):
     """A parent class for objects that are animated directly in the map.
