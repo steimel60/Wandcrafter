@@ -9,7 +9,12 @@ class Obstacle:
         self.rect = rect
 
     def interact(self):
-        box = MessageBox(f"It's just a {type(self)}...")
+        box = MessageBox(
+            [
+                f"It's just a {type(self).__name__}...",
+                f"Here's its save dict: {vars(self)}"
+            ]
+        )
         return ["CHANGE_STATE", "message_box", box]
 
 class AnimatedObstacle(Obstacle):
