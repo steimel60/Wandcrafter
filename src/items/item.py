@@ -23,8 +23,17 @@ class Item:
 
     def save(self) -> dict:
         data = {}
+        data["type"] = type(self).__name__
         for key in (d := vars(self)):
+            value = d[key]
             if hasattr(value, "__dict__"):
                 value = self.serialize(value)
             data[key] = value
         return data
+
+    @classmethod
+    def from_json(cls, _data):
+        raise NotImplementedError(
+            f'"from_json" method not implemented for Class "{cls.__name__}". Item subclasses must implement this method.'
+        )
+        

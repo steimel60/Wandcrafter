@@ -56,3 +56,15 @@ class Wand(Item):
         self.wood = wood
         self.core = core
         self.length = length
+
+    @classmethod
+    def from_json(cls, data):
+        wood = WandWood(**data["wood"])
+        core = WandCore(**data["core"])
+        length = WandLength(**data["length"])
+        instance = cls(
+            wood = wood,
+            core = core,
+            length = length
+        )
+        return instance
