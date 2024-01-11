@@ -36,4 +36,3 @@ class Item:
         raise NotImplementedError(
             f'"from_json" method not implemented for Class "{cls.__name__}". Item subclasses must implement this method.'
         )
-        

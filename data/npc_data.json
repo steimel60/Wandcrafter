@@ -11,22 +11,16 @@
                 }
             },
             "inventory": {
-                "equipped" : [
-                    {
+                "equipped" : {
                         "cloak": {
-                            "type": "school_cloak",
+                            "type": "Cloak",
+                            "species" : "Human",
+                            "style": "school_cloak",
                             "color": "-"
                         }
-                    }
-                ],
-                "other" : [
-                    {
-                        "wand": {
-                            "core": "Phoenix Feather",
-                            "wood": "Oak",
-                            "length": 12
-                        }
-                    }
+                    },
+                "bag" : [
+                    {"type": "Wand", "wood": {"name": "Larch"}, "core": {"name": "Dragon Heartstring"}, "length": {"length": 13}}
                 ]
             }
         },
@@ -41,18 +35,9 @@
                 }
             },
             "inventory": {
-                "equipped" : [
-                    {
-                        "wand": {
-                            "core": "Dragon Heartstring",
-                            "wood": "Larch",
-                            "length": 13
-                        }
-                    }
-                ],
-                "other" : [
-                    {
-                    }
+                "equipped" :{},
+                "bag" : [
+                    {"type": "Wand", "wood": {"name": "Larch"}, "core": {"name": "Dragon Heartstring"}, "length": {"length": 13}}
                 ]
             }
         }

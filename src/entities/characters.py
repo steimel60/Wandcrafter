@@ -15,7 +15,7 @@ import pygame as pg
 from entities.entity import Entity
 from config.player_settings import WALK_SPEED
 from config.directories import SPRITES_DIR
-from items.inventory import CharacterInventory
+from entities.inventory import CharacterInventory
 
 class Character(Entity):
     """Base class for character entities in the game.
@@ -31,7 +31,8 @@ class Character(Entity):
             y = data["location"]["position"]["y"]
         )
         self.data = data
-        self.inventory = data["inventory"]
+        self.inventory = CharacterInventory.from_json(data["inventory"])
+        self.update_appearance()
         self.speed = WALK_SPEED
         self.destination = self.hitbox.rect.copy()
 
@@ -70,8 +71,8 @@ class Character(Entity):
         base_sprite = SPRITES_DIR / self.data["race"] / self.data["sprite"]
         layers = [base_sprite]
         for _, item in self.inventory.equipped.items():
-            if item is not None:
-                layers.append(item)
+            if item.sprite_sheet is not None:
+                layers.append(item.sprite_sheet)
         layers.insert(0, base_sprite)
         self.appearance.make_new_animation(layers)
 
@@ -98,19 +99,5 @@ class Character(Entity):
                     "y" : self.y
                 }
             },
-            "inventory": { # MAKE WAY TO SAVE INVENTORY LATER
-                "equipped" : [
-                    {
-                        "wand": {
-                            "core": "Dragon Heartstring",
-                            "wood": "Larch",
-                            "length": 13
-                        }
-                    }
-                ],
-                "other" : [
-                    {
-                    }
-                ]
-            }
+            "inventory": self.inventory.save()
         }

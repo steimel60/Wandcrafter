@@ -9,7 +9,7 @@ import pygame as pg
 from states.state_base import State
 from entities.player_character import PlayerCharacter
 from items.wand import Wand, WandCore, WandLength, WandWood
-from items.inventory import CharacterInventory
+from entities.inventory import CharacterInventory
 from items.cloak import Cloak
 from config.colors import WHITE, LIGHTGREY, MYSTIC_RED
 from config.directories import SPRITES_DIR
@@ -111,16 +111,11 @@ class CharacterCreationState(State):
                 core = WandCore(self.options["Wand Core"][self.attr_idx[2]]),
                 length = WandLength(self.options["Wand Length (inches)"][self.attr_idx[3]])
             )
-        #cloak = Cloak(sprite_sheet = SPRITES_DIR / species / "cloak" / "school_cloak")
+        cloak = Cloak(species=species, style="school_cloak")
         # Add options to inventory
         inventory = CharacterInventory()
-        #inventory.equip(cloak)
+        inventory.equip(cloak)
         inventory.add_item(wand)
-        sprites = [SPRITES_DIR / species / "base.png"]
-        for _, item in inventory.equipped.items():
-            if item:
-                sprites.append(item.sprite_sheet)
-                print(item.sprite_sheet)
         data = {
             "case" : "player",  # Tells state manager passing player data
             "name" : self.options["Name"][self.attr_idx[0]],
@@ -133,20 +128,6 @@ class CharacterCreationState(State):
                     "y" : 32
                 }
             },
-            "inventory": {
-                "equipped" : [
-                    {
-                        "wand": {
-                            "core": "Dragon Heartstring",
-                            "wood": "Larch",
-                            "length": 13
-                        }
-                    }
-                ],
-                "other" : [
-                    {
-                    }
-                ]
-            }
+            "inventory": inventory.save()
         }
         return data
