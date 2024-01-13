@@ -20,6 +20,7 @@ from maps.camera import Camera
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
+from entities.animals import Animal
 
 class GameplayState(State):
     """
@@ -76,18 +77,22 @@ class GameplayState(State):
                             print("INTERACT EVENT")
                             return self.player.interact(self.map.obstacles)
                     ########## TEST EVENTS #############
-                    case pg.K_u:
-                        if "idle" in self.player.appearance.current_anim:
-                            print("EQUIP EVENT")
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
+                            print("EQUIP EVENT")
+                            self.player.inventory.equip(self.player.inventory.bag[-1])
+                            self.player.update_appearance()
+                    case pg.K_u:
+                        if "idle" in self.player.appearance.current_anim:
                             print("UNEQUIP EVENT")
+                            self.player.inventory.unequip("Cloak")
+                            self.player.update_appearance()
                     case pg.K_m:
                         box = MessageBox(
                             [
                                 "Congrats, you hit 'M'! This is a super duper long message just to test the capabilities of the message box state. it should wrap the text in a message box and also close when you hit space. It should now also create slides for a super long message like this one. Like you'll probaby have to hit space to have seen this.",
                                 "Surprise! 2 Messages work (:"
-                            ]                            
+                            ]
                         )
                         return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
@@ -210,6 +215,11 @@ class GameplayState(State):
                 self.sprite_groups["all_sprites"].append(npc)
                 self.sprite_groups["characters"].append(npc)
                 self.sprite_groups["npcs"].append(npc)
+        bunny = Animal("jackalope")
+        self.map.obstacles.append(bunny)
+        self.sprite_groups["all_sprites"].append(bunny)
+        self.sprite_groups["characters"].append(bunny)
+        self.sprite_groups["npcs"].append(bunny)
         self.camera.open_map(self.map)
 
     def load_data(self, data: dict, tags: list[str]) -> None:

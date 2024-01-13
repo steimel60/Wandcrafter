@@ -71,8 +71,9 @@ class Character(Entity):
         base_sprite = SPRITES_DIR / self.data["race"] / self.data["sprite"]
         layers = [base_sprite]
         for _, item in self.inventory.equipped.items():
-            if item.sprite_sheet is not None:
-                layers.append(item.sprite_sheet)
+            if item:
+                if item.sprite_sheet is not None:
+                    layers.append(item.sprite_sheet)
         layers.insert(0, base_sprite)
         self.appearance.make_new_animation(layers)
 
