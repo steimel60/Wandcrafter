@@ -90,11 +90,18 @@ class TiledMap:
         """Get a list of static obstacles in the map."""
         obstacles = []
         for tile_object in self.tmxdata.objects:
+            print(tile_object)
             if "frames" in tile_object.properties:
                 item = self.create_animated_object(tile_object)
+                print("anim")
             elif tile_object.name == "wall":
                 rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
                 item = Obstacle(rect)
+                print("wall")
+            else:
+                rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+                item = Obstacle(rect)
+                print("other item")
             obstacles.append(item)
         return obstacles
 
