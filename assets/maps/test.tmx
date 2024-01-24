@@ -1,12 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="50">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="56">
  <tileset firstgid="1" name="test" tilewidth="32" tileheight="32" tilecount="1024" columns="32">
-  <image source="../tilesets/town_assets/walls,ground,decorative.png" trans="ffffff" width="1024" height="1024"/>
+  <image source="tilesets/town_assets/walls,ground,decorative.png" trans="ffffff" width="1024" height="1024"/>
  </tileset>
  <tileset firstgid="1025" name="buildings" tilewidth="32" tileheight="32" tilecount="720" columns="30">
-  <image source="../tilesets/houses/main_houses.png" trans="ffffff" width="960" height="768"/>
+  <image source="tilesets/houses/main_houses.png" trans="ffffff" width="960" height="768"/>
+  <tile id="32">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="33">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="34">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="62">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="63">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="64">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="92">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="93">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="94">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="122">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="123">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="124">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="132" type="Door"/>
+  <tile id="133" type="Door"/>
+  <tile id="134" type="DoorAnim">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+   <animation>
+    <frame tileid="133" duration="500"/>
+    <frame tileid="132" duration="500"/>
+   </animation>
+  </tile>
+  <tile id="152">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="153">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="154">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="162">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="163">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="164" type="DoorAnim">
+   <animation>
+    <frame tileid="163" duration="500"/>
+    <frame tileid="162" duration="500"/>
+   </animation>
+  </tile>
+  <tile id="182">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
+  <tile id="184">
+   <objectgroup draworder="index" id="2">
+    <object id="1" x="0" y="0" width="32" height="32"/>
+   </objectgroup>
+  </tile>
  </tileset>
- <tileset firstgid="1745" source="../tilesets/trees/TreeTest.tsx"/>
+ <tileset firstgid="1745" source="tilesets/trees/TreeTest.tsx"/>
  <layer id="1" name="Ground" width="50" height="30">
   <data encoding="csv">
 569,568,569,568,536,569,537,569,569,568,537,569,568,569,536,569,537,537,569,536,536,537,536,569,536,569,568,537,569,536,568,537,568,536,537,568,536,568,537,537,537,536,569,537,537,537,537,536,537,536,
@@ -47,7 +159,7 @@
 0,0,0,0,1116,1117,1118,1119,1120,0,0,0,1116,1117,1118,1119,1120,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,1146,1147,1148,1149,1150,0,953,0,1146,1033,1034,1035,1150,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,990,991,1176,1177,1178,1179,1180,0,985,0,1176,1063,1064,1065,1180,990,991,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,1022,1023,1206,1207,1158,1209,1210,0,1017,0,1206,1093,1158,1095,1210,1022,1023,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,1022,1023,1206,1207,0,1209,1210,0,1017,0,1206,1093,0,1095,1210,1022,1023,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,1236,0,0,0,1240,0,0,0,1236,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -76,20 +188,7 @@
 </data>
  </layer>
  <objectgroup id="5" name="Portals">
-  <object id="40" name="door" x="192" y="128" width="32" height="32">
-   <properties>
-    <property name="door_id" type="int" value="0"/>
-    <property name="exit_dir" value="up"/>
-    <property name="to_level" value="indoor1"/>
-   </properties>
-  </object>
-  <object id="41" name="door" x="448" y="128" width="32" height="32">
-   <properties>
-    <property name="door_id" type="int" value="1"/>
-    <property name="exit_dir" value="up"/>
-    <property name="to_level" value="BookShop"/>
-   </properties>
-  </object>
+  <object id="54" name="indoor1" gid="1159" x="192" y="160" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="4" name="Obstacles">
   <object id="1" name="wall" x="128" y="0" width="160" height="128"/>
@@ -130,6 +229,7 @@
   </object>
   <object id="38" name="MagicTree" gid="1745" x="160" y="448" width="32" height="32"/>
   <object id="39" name="Tree" gid="1746" x="160" y="384" width="32" height="32"/>
+  <object id="55" gid="1189" x="192" y="192" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="Items"/>
  <objectgroup id="7" name="Spawns"/>

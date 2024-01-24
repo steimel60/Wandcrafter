@@ -64,18 +64,17 @@ class TiledMap:
                     is_animated = False
                     map_x = x * self.tmxdata.tilewidth # x location of tile adjusted to map size
                     map_y = y * self.tmxdata.tileheight # y location of tile adjusted to map size
-                    if self.tmxdata.get_tile_properties_by_gid(gid):
-                        properties = self.tmxdata.get_tile_properties_by_gid(gid)
+                    if (properties := self.tmxdata.get_tile_properties_by_gid(gid)):
                         if "frames" in properties: # Check if tile is animated
-                            is_animated = True
-                            rect = pg.Rect(
-                                map_x,
-                                map_y,
-                                properties['width'],
-                                properties['height']
-                            )
-                            frames = self.load_animation_frames(properties["frames"])
-                            self.items['tiles'].append(AnimatedTile(frames, rect))
+                            if (is_animated := len(properties["frames"]) > 0):
+                                rect = pg.Rect(
+                                    map_x,
+                                    map_y,
+                                    properties['width'],
+                                    properties['height']
+                                )
+                                frames = self.load_animation_frames(properties["frames"])
+                                self.items['tiles'].append(AnimatedTile(frames, rect))
                     image = self.tmxdata.get_tile_image_by_gid(gid)
                     if image and not is_animated:
                         surface.blit(image, (map_x, map_y))
@@ -90,18 +89,15 @@ class TiledMap:
         """Get a list of static obstacles in the map."""
         obstacles = []
         for tile_object in self.tmxdata.objects:
-            print(tile_object)
             if "frames" in tile_object.properties:
-                item = self.create_animated_object(tile_object)
-                print("anim")
+                if len(tile_object.properties["frames"]) > 0:
+                    item = self.create_animated_object(tile_object)
             elif tile_object.name == "wall":
                 rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
                 item = Obstacle(rect)
-                print("wall")
             else:
                 rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
                 item = Obstacle(rect)
-                print("other item")
             obstacles.append(item)
         return obstacles
 
