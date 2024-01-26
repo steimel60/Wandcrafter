@@ -62,12 +62,16 @@ class Character(Entity):
         if self.hitbox.rect.x < self.destination.x:
             self.change_position(speed, 0)
         self.hitbox.move(self.x, self.y)
+        #if self.has_arrived():
+            #self.appearance.set_to_idle()
 
     def update(self):
         """Update the character's position and appearance."""
         super().update()
         if self.hitbox.rect != self.destination: # If moving
             self.move(self.speed)
+        else:
+            self.appearance.set_to_idle()
 
     def update_appearance(self):
         """Update the character's sprite based on their current inventory."""

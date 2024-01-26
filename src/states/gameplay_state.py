@@ -17,8 +17,9 @@ from entities.player_character import PlayerCharacter
 from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
+from sfx.fader import Fader, get_fade_action
 from maps.portals import Portal, Door
-from states.sequencer import Scene, Sequencer
+from states.sequencer import Scene, Sequencer, ExecutableMethod, SceneAction
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
@@ -103,16 +104,16 @@ class GameplayState(State):
                         )
                         return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
-            if event.type == pg.KEYUP:
-                match event.key:
-                    case pg.K_UP | pg.K_w:
-                        self.player.set_animation("idle_up")
-                    case pg.K_DOWN | pg.K_s:
-                        self.player.set_animation("idle_down")
-                    case pg.K_LEFT | pg.K_a:
-                        self.player.set_animation("idle_left")
-                    case pg.K_RIGHT | pg.K_d:
-                        self.player.set_animation("idle_right")
+            #if event.type == pg.KEYUP:
+                #match event.key:
+                    #case pg.K_UP | pg.K_w:
+                        #self.player.set_animation("idle_up")
+                    #case pg.K_DOWN | pg.K_s:
+                        #self.player.set_animation("idle_down")
+                    #case pg.K_LEFT | pg.K_a:
+                        #self.player.set_animation("idle_left")
+                    #case pg.K_RIGHT | pg.K_d:
+                        #self.player.set_animation("idle_right")
 
     def handle_continuous_player_movement(self):
         """Handle continuous player movement based on currently pressed keys."""
@@ -136,11 +137,52 @@ class GameplayState(State):
 
     def handle_player_collision_events(self, collision_object):
         if isinstance(collision_object, Portal):
-            portal_seq = collision_object.get_map_change_seq(self.player, self)
-            return ["CHANGE_STATE", "sequencer", portal_seq]
+            #portal_seq = collision_object.get_map_change_seq(self.player, self)
+            #return ["CHANGE_STATE", "sequencer", portal_seq]
+            return self.use_portal_new(portal=collision_object)
+
+    def use_portal_new(self, portal):
+        # Get needed data
+        next_map = TiledMap(portal.name)
+        spawn_portal = self.get_portal_by_pid(portal.to_pid, map = next_map)
+        # Get "Entering" Scenes
+        portal_seq = portal.get_enter_seq(self.player)
+        fader1, fade_out_action = get_fade_action(self, is_fade_in=False)
+        portal_seq.insert_scene_action("Enter Portal", 0, fade_out_action)
+        # Add "Map Change" Scenes
+        load_map = SceneAction(
+            ExecutableMethod(self, "open_map", [portal.name]),
+            None,
+            ExecutableMethod(
+                self.player,
+                "set_position",
+                [spawn_portal.rect.x, spawn_portal.rect.y]
+                )
+            )
+        keep_fade = SceneAction(ExecutableMethod(self, "add_sprite", [fader1, ["all_sprites"]]))
+        map_change = Scene("Load Map", [load_map, keep_fade])
+        portal_seq.insert_scene(len(portal_seq.scenes), map_change)
+        # Add "Exiting" Scenes
+        exit_seq = spawn_portal.get_exit_seq(self.player)
+        end_fade = SceneAction(ExecutableMethod(fader1, "end_fade"))
+        _fader2, fade_in_action = get_fade_action(self, is_fade_in=True, include_end=True)
+        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), end_fade)
+        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), fade_in_action)
+        portal_seq.insert_scene(len(portal_seq.scenes), exit_seq)
+
+        return ["CHANGE_STATE", "sequencer", portal_seq]
+        
+    def get_portal_by_pid(self, pid, map = None):
+        if map is None:
+            map = self.map
+        for portal in map.items['portals']:
+            if portal.pid == pid:
+                return portal
+        return None
 
     def use_portal(self, portal):
         """Loads new map and places player in correct position."""
+        # Open Map
         self.open_map(portal.name)
         to_pid = portal.to_pid
         spawn_portal = None
@@ -150,9 +192,10 @@ class GameplayState(State):
                 break
         self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
 
+
     def update(self):
         """Update logic for the gameplay state."""
-        for sprite in self.sprite_groups["characters"]:
+        for sprite in self.sprite_groups["all_sprites"]:
             sprite.update()
         self.map.update()
         self.camera.update(self.player.hitbox)
@@ -168,6 +211,10 @@ class GameplayState(State):
         self.draw_grid(screen)
         for sprite in self.sprite_groups["all_sprites"]:
             sprite.draw(screen, self.camera)
+
+    def add_sprite(self, sprite, groups):
+        for group in groups:
+            self.sprite_groups[group].append(sprite)
 
     def draw_grid(self, screen):
         """Draw tiles on screen."""
@@ -248,9 +295,6 @@ class GameplayState(State):
         self.sprite_groups["characters"].append(bunny)
         self.sprite_groups["npcs"].append(bunny)
         self.camera.open_map(self.map)
-
-    def test(self):
-        return True
 
     def load_data(self, data: dict, tags: list[str]) -> None:
         """Load game data based on tags.

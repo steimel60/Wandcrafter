@@ -3,9 +3,10 @@
 These classes are used to transition from map to map.
 """
 import pygame as pg
+from config.game_settings import TILESIZE
 from gui.message_box import MessageBox
-from states.sequencer import Scene, Sequencer
-from sfx.fader import FadeOut
+from states.sequencer import Scene, Sequencer, SceneAction, ExecutableMethod
+from sfx.fader import Fader
 
 class Portal:
     """A parent class for static map objects."""
@@ -30,36 +31,29 @@ class Portal:
             screen.blit(self.img, camera.apply_rect(self.rect))
         pg.draw.rect(screen, (255,0,255), camera.apply_rect(self.rect), 2)
 
-    def get_map_change_seq(self, character, game_state):
-        """Creates a sequencer for an entire map change.
-        
-        Includes the following scenes:
-        - Walk In: Player walks in to the portal.
-        - Map Change: No anim, just executes map change.
-        - Walk Out: Player walks 1 tile in current direction.
-        """
+    def get_enter_seq(self, character):
+        return Sequencer(self.get_enter_scenes(character))
+
+    def get_exit_seq(self, character):
+        return Sequencer(self.get_exit_scenes(character))
+
+    def get_enter_scenes(self, character):
         dx = self.rect.x - character.hitbox.rect.x
         dy = self.rect.y - character.hitbox.rect.y
-        walk_in = Scene(
-            character,
-            "change_destination",
-            [dx, dy, []],
-            "has_arrived"
-        )
-        change_map = Scene(
-            game_state,
-            "use_portal",
-            [self],
-            "test"
-        )
-        walk_out = Scene(
-            character,
-            "change_destination",
-            [dx, dy, []],
-            "has_arrived",
-            pre_delay=0.5
-        )
-        return Sequencer([walk_in, change_map, walk_out])
+        return [Scene(
+            "Enter Portal",
+            [SceneAction(
+                ExecutableMethod(character, "change_destination", [dx,dy,[]])
+                )]
+            )]
+
+    def get_exit_scenes(self, character):
+        """This should be implemented in subclasses if they have special outro
+        if you want special transitions.
+        
+        e.g. Doors having a scene to close the doors
+        """
+        return [Scene("Exit Portal", [])]
 
 class Door(Portal):
     def __init__(self, rect, name, properties, frames):
@@ -91,16 +85,39 @@ class Door(Portal):
     def is_open(self):
         return self.open_state
 
-    def get_map_change_seq(self, character, game_state) -> Sequencer:
-        """Returns the sequencer for map change via door."""
-        portal_seq = super().get_map_change_seq(character, game_state)
+    def get_enter_seq(self, character):
+        seq = super().get_enter_seq(character)
+        return seq
+
+    def get_exit_seq(self, character):
+        return Sequencer(self.get_exit_scenes(character))
+
+    def get_enter_scenes(self, character):
+        super_scenes = super().get_enter_scenes(character)
         open_door = Scene(
-            self,
-            "open_door",
-            [],
-            "is_open",
-            pre_delay=0,
-            post_delay=0.5
-        )
-        portal_seq.insert_seq(0, open_door)
-        return portal_seq
+            "Open Door",
+            [SceneAction(ExecutableMethod(self, "open_door"))],
+            post_delay=.1
+            )
+        super_scenes.insert(0, open_door)
+        return super_scenes
+
+    def get_exit_scenes(self, character):
+        dx, dy = 0, 0
+        anim = character.appearance.current_anim
+        if "up" in anim:
+            dy -= TILESIZE
+        if "down" in anim:
+            dy += TILESIZE
+        if "left" in anim:
+            dx -= TILESIZE
+        if "right" in anim:
+            dx += TILESIZE
+        scene1 = Scene("Open Door", [SceneAction(ExecutableMethod(self, "open_door"))])
+        scene2 = Scene(
+            "Exit Portal",
+            [SceneAction(ExecutableMethod(character, "change_destination", [dx,dy,[]]))],
+            pre_delay = 0.1
+            )
+        scene3 = Scene("Close Door", [SceneAction(ExecutableMethod(self, "close_door"))])
+        return [scene1, scene2, scene3]
