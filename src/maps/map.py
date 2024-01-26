@@ -12,6 +12,7 @@ import pytmx
 from config.directories import MAP_DIR
 from maps.obstacles import Obstacle, AnimatedObstacle
 from maps.animated_tiles import AnimatedTile
+from maps.portals import Portal, Door
 
 class TiledMap:
     """
@@ -49,17 +50,49 @@ class TiledMap:
         self.height =tm.height * tm.tileheight
         self.tmxdata = tm
         self.items = {
-            'animated' : list(),
-            'tiles' : list()
+            'animated' : [], # probably delete - move to draw and update list
+            'obstacles' : [], # Walls, lamps, etc
+            'portals' : [], # Doors, portals, etc.
+            'tiles' : [], # probably move out of items
+            'draw_list' : [], # things to be drawn during draw loop
+            'update_list' : [], # things to be updated in update loop
+            'collision_list' : [] # things that can 
         }
+        self.items['obstacles'] = self.get_obstacles()
+        self.items['portals'] = self.get_portals()
         self.image = self.make_map()
         self.rect = self.image.get_rect()
-        self.obstacles = self.get_obstacles()
+        #self.obstacles = self.get_obstacles()
+
+    def draw(self, screen, camera):
+        """Draw the map's image to the screen.
+
+        Args:
+            screen (pygame.Surface): The pygame surface to draw on.
+        """
+        # Draw static image
+        screen.blit(self.image, camera.apply(self))
+        # Draw animated images
+        for tile in self.items['tiles']:
+            tile.draw(screen, camera)
+        for item in self.items['animated']:
+            item.draw(screen, camera)
+        for item in self.items['portals']:
+            item.draw(screen, camera)
+        # Draw debug boxes
+        for obstacle in self.items["obstacles"]:
+            pg.draw.rect(screen, (255,255,255), camera.apply(obstacle), 2)
+
+    def update(self):
+        for tile in self.items['tiles']:
+            tile.update()
+        for item in self.items['animated']:
+            item.update()
 
     def render(self, surface):
         """Create the image for the map"""
         for layer in self.tmxdata.visible_layers:
-            if isinstance(layer, pytmx.TiledTileLayer): # If a tile layer (not an object layer)
+            if isinstance(layer, pytmx.TiledTileLayer): # If a tile layer, not an object layer
                 for x, y, gid in layer:
                     is_animated = False
                     map_x = x * self.tmxdata.tilewidth # x location of tile adjusted to map size
@@ -88,41 +121,54 @@ class TiledMap:
     def get_obstacles(self):
         """Get a list of static obstacles in the map."""
         obstacles = []
-        for tile_object in self.tmxdata.objects:
-            if "frames" in tile_object.properties:
-                if len(tile_object.properties["frames"]) > 0:
-                    item = self.create_animated_object(tile_object)
-            elif tile_object.name == "wall":
+        layer = self.tmxdata.get_layer_by_name("Obstacles")
+        if layer:
+            for tile_object in layer:
                 rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
-                item = Obstacle(rect)
-            else:
-                rect = pg.Rect(tile_object.x, tile_object.y, tile_object.width, tile_object.height)
-                item = Obstacle(rect)
-            obstacles.append(item)
+                if "frames" in tile_object.properties:
+                    if len(tile_object.properties["frames"]) > 0:
+                        item = self.create_animated_object(tile_object)
+                elif tile_object.name == "wall":
+                    item = Obstacle(rect)
+                else:
+                    #item = Obstacle(rect)
+                    pass
+                obstacles.append(item)
         return obstacles
 
-    def draw(self, screen, camera):
-        """Draw the map's image to the screen.
-
-        Args:
-            screen (pygame.Surface): The pygame surface to draw on.
-        """
-        # Draw static image
-        screen.blit(self.image, camera.apply(self))
-        # Draw animated images
-        for tile in self.items['tiles']:
-            tile.draw(screen, camera)
-        for item in self.items['animated']:
-            item.draw(screen, camera)
-        # Draw debug boxes
-        for obstacle in self.obstacles:
-            pg.draw.rect(screen, (255,255,255), camera.apply(obstacle), 2)
-
-    def update(self):
-        for tile in self.items['tiles']:
-            tile.update()
-        for item in self.items['animated']:
-            item.update()
+    def get_portals(self) -> list[Portal]:
+        portals = []
+        layer = self.tmxdata.get_layer_by_name("Portals")
+        if layer:
+            for portal in layer:
+                rect = pg.Rect(portal.x, portal.y, portal.width, portal.height)
+                # Get Portal type
+                p_type = None
+                if "type" in portal.properties:
+                    p_type = portal.properties["type"] # When coming from tileset
+                if not p_type:
+                    p_type = portal.type # When coming as shape
+                # Create Portal based on it's type
+                if p_type == "Door":
+                    p = Door(
+                        rect = rect,
+                        name = portal.name,
+                        properties = portal.properties,
+                        frames = self.load_animation_frames(portal.properties['frames'])
+                    )
+                elif p_type == "Portal":
+                    p = Portal(
+                        rect = rect,
+                        name = portal.name,
+                        properties = portal.properties,
+                        img = self.tmxdata.get_tile_image_by_gid(portal.gid)
+                    )
+                    print(self.tmxdata.get_tile_image_by_gid(portal.gid))
+                    print(portal.properties)
+                else:
+                    raise ValueError(f"Type not recognized for object {portal} in Portals layer.")
+                portals.append(p)
+        return portals
 
     def load_animation_frames(self, frames) -> list:
         """Create the pygame surface from the AnimationFrame objects passed in the init function.

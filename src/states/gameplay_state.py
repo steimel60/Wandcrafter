@@ -17,6 +17,8 @@ from entities.player_character import PlayerCharacter
 from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
+from maps.portals import Portal, Door
+from states.sequencer import Scene, Sequencer
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
@@ -45,6 +47,7 @@ class GameplayState(State):
         self.save_data = {}
         self.sprite_groups = self.init_sprite_groups()
         self.quest_data = None
+        self.sequences = []
 
     def handle_events(self, events):
         """Handle events in the gameplay state.
@@ -54,7 +57,9 @@ class GameplayState(State):
         """
         self.handle_global_events(events)
         response = self.handle_player_events(events)
-        self.handle_continuous_player_movement()
+        if response:
+            return response
+        response = self.handle_continuous_player_movement()
         return response
 
     def handle_global_events(self, events):
@@ -66,6 +71,7 @@ class GameplayState(State):
                         self.save_game()
             if event.type == pg.VIDEORESIZE:
                 self.camera.change_screen_size()
+        return None
 
     def handle_player_events(self, events):
         """Logic for key up/down events involving the player character."""
@@ -73,9 +79,10 @@ class GameplayState(State):
             if event.type == pg.KEYDOWN:
                 match event.key:
                     case pg.K_SPACE:
-                        if "idle" in self.player.appearance.current_anim:
+                        if self.player.is_idle():
                             print("INTERACT EVENT")
-                            return self.player.interact(self.map.obstacles)
+                            items = self.map.items["obstacles"] + self.map.items["portals"]
+                            return self.player.interact(items)
                     ########## TEST EVENTS #############
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
@@ -109,19 +116,39 @@ class GameplayState(State):
 
     def handle_continuous_player_movement(self):
         """Handle continuous player movement based on currently pressed keys."""
+        response =  None
+        obstacles = self.map.items["obstacles"] + self.map.items["portals"]
         keys = pg.key.get_pressed()
         if keys[pg.K_UP] or keys[pg.K_w]:
             self.player.set_animation("walk_up")
-            self.player.change_destination(0, -TILESIZE, self.map.obstacles)
+            response = self.player.change_destination(0, -TILESIZE, obstacles)
         elif keys[pg.K_DOWN] or keys[pg.K_s]:
             self.player.set_animation("walk_down")
-            self.player.change_destination(0, TILESIZE, self.map.obstacles)
+            response = self.player.change_destination(0, TILESIZE, obstacles)
         elif keys[pg.K_LEFT] or keys[pg.K_a]:
             self.player.set_animation("walk_left")
-            self.player.change_destination(-TILESIZE, 0, self.map.obstacles)
+            response = self.player.change_destination(-TILESIZE, 0, obstacles)
         elif keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.player.set_animation("walk_right")
-            self.player.change_destination(TILESIZE, 0, self.map.obstacles)
+            response = self.player.change_destination(TILESIZE, 0, obstacles)
+        if response:
+            return self.handle_player_collision_events(response)
+
+    def handle_player_collision_events(self, collision_object):
+        if isinstance(collision_object, Portal):
+            portal_seq = collision_object.get_map_change_seq(self.player, self)
+            return ["CHANGE_STATE", "sequencer", portal_seq]
+
+    def use_portal(self, portal):
+        """Loads new map and places player in correct position."""
+        self.open_map(portal.name)
+        to_pid = portal.to_pid
+        spawn_portal = None
+        for p in self.map.items['portals']:
+            if p.pid == to_pid:
+                spawn_portal = p
+                break
+        self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
 
     def update(self):
         """Update logic for the gameplay state."""
@@ -200,7 +227,7 @@ class GameplayState(State):
         Args:
             map_name (str): The name of the map to load.
         """
-        self.init_sprite_groups()
+        self.sprite_groups = self.init_sprite_groups()
         self.sprite_groups["all_sprites"].append(self.player)
         self.sprite_groups["characters"].append(self.player)
         self.sprite_groups["npcs"].append(self.player)
@@ -211,16 +238,19 @@ class GameplayState(State):
         for npc_id in npc_data:
             if npc_data[npc_id]["location"]["map"] == map_name:
                 npc = NPC(npc_id)
-                self.map.obstacles.append(npc)
+                self.map.items["obstacles"].append(npc)
                 self.sprite_groups["all_sprites"].append(npc)
                 self.sprite_groups["characters"].append(npc)
                 self.sprite_groups["npcs"].append(npc)
         bunny = Animal("jackalope")
-        self.map.obstacles.append(bunny)
+        self.map.items["obstacles"].append(bunny)
         self.sprite_groups["all_sprites"].append(bunny)
         self.sprite_groups["characters"].append(bunny)
         self.sprite_groups["npcs"].append(bunny)
         self.camera.open_map(self.map)
+
+    def test(self):
+        return True
 
     def load_data(self, data: dict, tags: list[str]) -> None:
         """Load game data based on tags.

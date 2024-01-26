@@ -31,6 +31,11 @@ class Entity:
         """An entity's rect is just the hitbox rect."""
         return self.hitbox.rect
 
+    def set_position(self, x, y):
+        self.x, self.y = x, y
+        self.hitbox.rect.x, self.hitbox.rect.y = x + self.hitbox.x_offset, y + self.hitbox.y_offset
+
+
     def draw(self, screen, camera):
         """
         Draw the player character on the screen.
