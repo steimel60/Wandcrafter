@@ -72,7 +72,6 @@ class GameplayState(State):
                         self.save_game()
             if event.type == pg.VIDEORESIZE:
                 self.camera.change_screen_size()
-        return None
 
     def handle_player_events(self, events):
         """Logic for key up/down events involving the player character."""
@@ -104,16 +103,6 @@ class GameplayState(State):
                         )
                         return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
-            #if event.type == pg.KEYUP:
-                #match event.key:
-                    #case pg.K_UP | pg.K_w:
-                        #self.player.set_animation("idle_up")
-                    #case pg.K_DOWN | pg.K_s:
-                        #self.player.set_animation("idle_down")
-                    #case pg.K_LEFT | pg.K_a:
-                        #self.player.set_animation("idle_left")
-                    #case pg.K_RIGHT | pg.K_d:
-                        #self.player.set_animation("idle_right")
 
     def handle_continuous_player_movement(self):
         """Handle continuous player movement based on currently pressed keys."""
@@ -134,6 +123,7 @@ class GameplayState(State):
             response = self.player.change_destination(TILESIZE, 0, obstacles)
         if response:
             return self.handle_player_collision_events(response)
+        return None
 
     def handle_player_collision_events(self, collision_object):
         if isinstance(collision_object, Portal):
@@ -179,19 +169,6 @@ class GameplayState(State):
             if portal.pid == pid:
                 return portal
         return None
-
-    def use_portal(self, portal):
-        """Loads new map and places player in correct position."""
-        # Open Map
-        self.open_map(portal.name)
-        to_pid = portal.to_pid
-        spawn_portal = None
-        for p in self.map.items['portals']:
-            if p.pid == to_pid:
-                spawn_portal = p
-                break
-        self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
-
 
     def update(self):
         """Update logic for the gameplay state."""
@@ -275,9 +252,7 @@ class GameplayState(State):
             map_name (str): The name of the map to load.
         """
         self.sprite_groups = self.init_sprite_groups()
-        self.sprite_groups["all_sprites"].append(self.player)
-        self.sprite_groups["characters"].append(self.player)
-        self.sprite_groups["npcs"].append(self.player)
+        self.add_sprite(self.player, ["all_sprites", "characters"])
         self.map = TiledMap(map_name)
         with open(DATA_DIR / "npc_data.json", encoding="utf-8") as f:
             npc_data = json.load(f)
@@ -286,14 +261,10 @@ class GameplayState(State):
             if npc_data[npc_id]["location"]["map"] == map_name:
                 npc = NPC(npc_id)
                 self.map.items["obstacles"].append(npc)
-                self.sprite_groups["all_sprites"].append(npc)
-                self.sprite_groups["characters"].append(npc)
-                self.sprite_groups["npcs"].append(npc)
+                self.add_sprite(npc, ["all_sprites", "characters", "npcs"])
         bunny = Animal("jackalope")
         self.map.items["obstacles"].append(bunny)
-        self.sprite_groups["all_sprites"].append(bunny)
-        self.sprite_groups["characters"].append(bunny)
-        self.sprite_groups["npcs"].append(bunny)
+        self.add_sprite(bunny, ["all_sprites", "characters", "npcs"])
         self.camera.open_map(self.map)
 
     def load_data(self, data: dict, tags: list[str]) -> None:

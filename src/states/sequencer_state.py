@@ -15,6 +15,7 @@ class SequencerState(State):
     def handle_events(self, _events):
         if self.sequencer.is_finished():
             return ["CHANGE_STATE", "gameplay"]
+        return None
 
     def update(self):
         self.sequencer.update()
