@@ -13,9 +13,25 @@ class State:
     game states. Game states handle different aspects of the game, such as
     the main menu, gameplay, character creation, etc.
     """
-    def __init__(self) -> None:
+    def __init__(self, manager) -> None:
         """Initialize a game state."""
+        self.manager = manager
+
+    def handle_events(self, events):
+        """Handle events for the game state."""
         pass  # pylint: disable=unnecessary-pass
+
+    def update(self):
+        """Update the game state."""
+        pass  # pylint: disable=unnecessary-pass
+
+    def draw(self, screen):
+        """Draw the game state."""
+        pass  # pylint: disable=unnecessary-pass
+
+class SubState:
+    def __init__(self, parent: State) -> None:
+        self.parent = parent
 
     def handle_events(self, events):
         """Handle events for the game state."""

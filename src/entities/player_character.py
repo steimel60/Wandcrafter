@@ -69,14 +69,14 @@ class PlayerCharacter(Character):
             self.interact_tile.x = self.destination.x + TILESIZE
             self.interact_tile.y = self.destination.y
 
-    def interact(self, map_objects):
+    def interact(self, map_objects, game_state):
         """Interact with map obstacles or other sprites."""
         idx = self.interact_tile.collidelist(map_objects)
         if idx != -1:
             if hasattr(map_objects[idx], "interact"):
-                return map_objects[idx].interact()
-            return ["CHANGE_STATE", "message_box", MessageBox("You can't interact with that...")]
-        return ["CHANGE_STATE", "message_box", MessageBox("There's nothing there...")]
+                map_objects[idx].interact(game_state)
+            else: game_state.manager.change_state("message_box", [MessageBox("You can't interact with that...")])
+        else: game_state.manager.change_state("message_box", [MessageBox("There's nothing there...")])
 
     def draw(self, screen: pg.Surface, camera):
         super().draw(screen, camera)

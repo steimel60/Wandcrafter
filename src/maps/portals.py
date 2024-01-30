@@ -17,14 +17,14 @@ class Portal:
         self.to_pid = properties["to_pid"]
         self.img = img
 
-    def interact(self):
+    def interact(self, game_state):
         box = MessageBox(
             [
                 f"It's a {type(self).__name__}...",
                 f"It looks like it goes to {self.name}!"
             ]
         )
-        return ["CHANGE_STATE", "message_box", box]
+        game_state.manager.change_state("message_box", [box])
 
     def draw(self, screen, camera):
         if self.img:
@@ -78,9 +78,9 @@ class Door(Portal):
     def close_door(self):
         self.open_state = 0
 
-    def interact(self):
+    def interact(self, game_state):
         self.open_state = (self.open_state + 1) % 2
-        return super().interact()
+        return super().interact(game_state)
 
     def is_open(self):
         return self.open_state

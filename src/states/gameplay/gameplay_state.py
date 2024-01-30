@@ -8,7 +8,7 @@ where the player is actively playing the game.
 import json
 from pathlib import Path
 import pygame as pg
-from states.state_base import State
+from states.states import State
 from config.colors import MYSTIC_BLUE, BLACK
 from config.game_settings import TILESIZE
 from config.directories import USER_GAME_DIR, DATA_DIR
@@ -32,7 +32,7 @@ class GameplayState(State):
     This class represents the game state where the player is actively playing
     the game. It manages game events, updates, and rendering of the game world.
     """
-    def __init__(self, path = None, player = None, tile_map = None):
+    def __init__(self, manager, path = None, player = None, tile_map = None):
         """Initialize the Gameplay State.
             
         Args:
@@ -40,7 +40,7 @@ class GameplayState(State):
             player (PlayerCharacter, optional): The player entity. Defaults to None.
             tile_map (TiledMap, optional): The tile map. Defaults to None.
         """
-        super().__init__()
+        super().__init__(manager)
         self.file_path = path
         self.player = player
         self.map = tile_map
@@ -82,7 +82,7 @@ class GameplayState(State):
                         if self.player.is_idle():
                             print("INTERACT EVENT")
                             items = self.map.items["obstacles"] + self.map.items["portals"]
-                            return self.player.interact(items)
+                            return self.player.interact(items, self)
                     ########## TEST EVENTS #############
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
@@ -101,7 +101,7 @@ class GameplayState(State):
                                 "Surprise! 2 Messages work (:"
                             ]
                         )
-                        return ["CHANGE_STATE", "message_box", box]
+                        self.manager.change_state("message_box", [box])
                     ################# END TEST ############
 
     def handle_continuous_player_movement(self):
@@ -127,14 +127,12 @@ class GameplayState(State):
 
     def handle_player_collision_events(self, collision_object):
         if isinstance(collision_object, Portal):
-            #portal_seq = collision_object.get_map_change_seq(self.player, self)
-            #return ["CHANGE_STATE", "sequencer", portal_seq]
             return self.use_portal_new(portal=collision_object)
 
     def use_portal_new(self, portal):
         # Get needed data
         next_map = TiledMap(portal.name)
-        spawn_portal = self.get_portal_by_pid(portal.to_pid, map = next_map)
+        spawn_portal = self.get_portal_by_pid(portal.to_pid, tile_map = next_map)
         # Get "Entering" Scenes
         portal_seq = portal.get_enter_seq(self.player)
         fader1, fade_out_action = get_fade_action(self, is_fade_in=False)
@@ -160,12 +158,12 @@ class GameplayState(State):
         exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), fade_in_action)
         portal_seq.insert_scene(len(portal_seq.scenes), exit_seq)
 
-        return ["CHANGE_STATE", "sequencer", portal_seq]
-        
-    def get_portal_by_pid(self, pid, map = None):
-        if map is None:
-            map = self.map
-        for portal in map.items['portals']:
+        self.manager.change_state("sequencer", [portal_seq])
+
+    def get_portal_by_pid(self, pid, tile_map = None):
+        if tile_map is None:
+            tile_map = self.map
+        for portal in tile_map.items['portals']:
             if portal.pid == pid:
                 return portal
         return None

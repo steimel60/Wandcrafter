@@ -1,4 +1,4 @@
-from states.state_base import State
+from states.states import State
 
 class SequencerState(State):
     """Used when transitioning between maps and such in the gameplay state.
@@ -7,14 +7,14 @@ class SequencerState(State):
     user input while sequences are playing.
     """
 
-    def __init__(self, sequencer, gameplay_state) -> None:
-        super().__init__()
+    def __init__(self, manager, sequencer, gameplay_state) -> None:
+        super().__init__(manager)
         self.sequencer = sequencer
         self.gameplay_state = gameplay_state
 
     def handle_events(self, _events):
         if self.sequencer.is_finished():
-            return ["CHANGE_STATE", "gameplay"]
+            self.manager.change_state("gameplay")
         return None
 
     def update(self):

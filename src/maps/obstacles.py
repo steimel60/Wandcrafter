@@ -8,14 +8,14 @@ class Obstacle:
     def __init__(self, rect: pg.Rect):
         self.rect = rect
 
-    def interact(self):
+    def interact(self, game_state):
         box = MessageBox(
             [
                 f"It's just a {type(self).__name__}...",
                 f"Here's its save dict: {vars(self)}"
             ]
         )
-        return ["CHANGE_STATE", "message_box", box]
+        game_state.manager.change_state("message_box", [box])
 
 class AnimatedObstacle(Obstacle):
     """A parent class for objects that are animated directly in the map.

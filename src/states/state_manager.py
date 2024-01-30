@@ -10,7 +10,7 @@ passing data during state transitions.
 import sys
 import pygame as pg
 from states.main_menu_state import MainMenuState
-from states.gameplay_state import GameplayState
+from states.gameplay.gameplay_state import GameplayState
 from states.character_creation_state import CharacterCreationState
 from states.message_box_state import MessageBoxState
 from states.sequencer_state import SequencerState
@@ -29,9 +29,9 @@ class StateManager:
     def __init__(self) -> None:
         """Initialize the StateManager with initial game states."""
         self.state_dict = {
-            'gameplay' : GameplayState(),
-            'main_menu' : MainMenuState(),
-            'character_creation' : CharacterCreationState(),
+            'gameplay' : GameplayState(self),
+            'main_menu' : MainMenuState(self),
+            'character_creation' : CharacterCreationState(self),
         }
         self.current_state = 'main_menu'
 
@@ -46,7 +46,7 @@ class StateManager:
             sys.exit()
         response = self.state_dict[self.current_state].handle_events(events)
         match response:
-            case ["CHANGE_STATE", new_state, *tags]: self.change_state(new_state, tags)
+            # case ["CHANGE_STATE", new_state, *tags]: self.change_state(new_state, tags)
             case ["LOAD_DATA", data, *tags]: self.load_data(data, tags)
             case _: pass
 
@@ -79,13 +79,19 @@ class StateManager:
             new_state (str): The name of the state to transition to.
             tags (list, optional): Additional tags or labels associated with the state transition.
         """
+        print("\nSTATE CHANGE")
+        print(f"CURRENT STATE: {self.current_state}")
+        print(f"NEW STATE: {new_state}")
+        print(f"TAGS: {_tags}\n")
         if new_state == "message_box":
             self.state_dict["message_box"] = MessageBoxState(
+                self,
                 _tags[0],
                 self.current_state
             )
         if new_state == "sequencer":
             self.state_dict["sequencer"] = SequencerState(
+                self,
                 _tags[0],
                 self.state_dict["gameplay"]
             )

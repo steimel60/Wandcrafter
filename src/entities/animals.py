@@ -24,11 +24,17 @@ class Animal(Character):
             }
         }
     
-    def interact(self):
+    def interact(self, game_state):
         box = MessageBox(
             [
                 f"Oh look a {self.animal}!",
                 f"Here's its save dict: {vars(self)}"
             ]
         )
-        return ["CHANGE_STATE", "message_box", box]
+        game_state.manager.change_state("message_box", [box])
+        box2 = MessageBox(
+            [
+                "I wonder if I can use it's hair as a core..."
+            ]
+        )
+        game_state.manager.change_state("message_box", [box2])

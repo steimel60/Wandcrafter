@@ -6,7 +6,7 @@ state design and logic.
 """
 
 import pygame as pg
-from states.state_base import State
+from states.states import State
 from config.colors import MYSTIC_PURPLE, WHITE, LIGHTGREY
 from config.game_settings import GAME_TITLE
 from utils.save_system import select_saved_game
@@ -19,7 +19,7 @@ class MainMenuState(State):
     between starting a new game or loading an existing one. It handles user
     input for selecting menu options and triggers corresponding actions.
     """
-    def __init__(self):
+    def __init__(self, manager):
         """Initialize the main menu state.
 
         Initializes the main menu state, setting the default selected option
@@ -30,7 +30,7 @@ class MainMenuState(State):
             options (list): A list of available menu options.
             font (pygame.font.Font): The font used for rendering text.
         """
-        super().__init__()
+        super().__init__(manager)
         self.selected_option = 0
         self.options = ["New Game", "Load Game"]
         self.font = pg.font.Font(None, 36)
@@ -58,7 +58,7 @@ class MainMenuState(State):
                     case pg.K_RETURN:
                         # Handle the selected option
                         if self.selected_option == 0:
-                            response = ["CHANGE_STATE", "character_creation"]
+                            self.manager.change_state("character_creation")
                         elif self.selected_option == 1:
                             response = self.load_existing_game()
         return response

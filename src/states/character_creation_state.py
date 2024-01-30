@@ -6,7 +6,7 @@ where the player is choosing character attributes.
 """
 
 import pygame as pg
-from states.state_base import State
+from states.states import State
 from entities.player_character import PlayerCharacter
 from items.wand import Wand, WandCore, WandLength, WandWood
 from entities.inventory import CharacterInventory
@@ -21,9 +21,9 @@ class CharacterCreationState(State):
     This class represents the game state where the player is choosing character attributes.
     It manages character attribute selection, character creation, and game initiation.
     """
-    def __init__(self):
+    def __init__(self, manager):
         """Initialize the Character Creation State."""
-        super().__init__()
+        super().__init__(manager)
         self.font = pg.font.Font(None, 36)
         self.options = {
             'Name' : ['Dylan', 'Cody', 'Bob'],
@@ -73,7 +73,7 @@ class CharacterCreationState(State):
                         if selection == "Start Game":
                             return ["LOAD_DATA", self.make_player(), "NEW_GAME"]
                         if selection == "Back":
-                            return ["CHANGE_STATE", "main_menu"]
+                            self.manager.change_state("main_menu")
             return None
 
     def draw(self, screen):
