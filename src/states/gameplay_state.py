@@ -17,6 +17,9 @@ from entities.player_character import PlayerCharacter
 from entities.npc import NPC
 from maps.map import TiledMap
 from maps.camera import Camera
+from sfx.fader import Fader, get_fade_action
+from maps.portals import Portal, Door
+from states.sequencer import Scene, Sequencer, ExecutableMethod, SceneAction
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
@@ -45,6 +48,7 @@ class GameplayState(State):
         self.save_data = {}
         self.sprite_groups = self.init_sprite_groups()
         self.quest_data = None
+        self.sequences = []
 
     def handle_events(self, events):
         """Handle events in the gameplay state.
@@ -54,7 +58,9 @@ class GameplayState(State):
         """
         self.handle_global_events(events)
         response = self.handle_player_events(events)
-        self.handle_continuous_player_movement()
+        if response:
+            return response
+        response = self.handle_continuous_player_movement()
         return response
 
     def handle_global_events(self, events):
@@ -73,9 +79,10 @@ class GameplayState(State):
             if event.type == pg.KEYDOWN:
                 match event.key:
                     case pg.K_SPACE:
-                        if "idle" in self.player.appearance.current_anim:
+                        if self.player.is_idle():
                             print("INTERACT EVENT")
-                            return self.player.interact(self.map.obstacles)
+                            items = self.map.items["obstacles"] + self.map.items["portals"]
+                            return self.player.interact(items)
                     ########## TEST EVENTS #############
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
@@ -96,36 +103,76 @@ class GameplayState(State):
                         )
                         return ["CHANGE_STATE", "message_box", box]
                     ################# END TEST ############
-            if event.type == pg.KEYUP:
-                match event.key:
-                    case pg.K_UP | pg.K_w:
-                        self.player.set_animation("idle_up")
-                    case pg.K_DOWN | pg.K_s:
-                        self.player.set_animation("idle_down")
-                    case pg.K_LEFT | pg.K_a:
-                        self.player.set_animation("idle_left")
-                    case pg.K_RIGHT | pg.K_d:
-                        self.player.set_animation("idle_right")
 
     def handle_continuous_player_movement(self):
         """Handle continuous player movement based on currently pressed keys."""
+        response =  None
+        obstacles = self.map.items["obstacles"] + self.map.items["portals"]
         keys = pg.key.get_pressed()
         if keys[pg.K_UP] or keys[pg.K_w]:
             self.player.set_animation("walk_up")
-            self.player.change_destination(0, -TILESIZE, self.map.obstacles)
+            response = self.player.change_destination(0, -TILESIZE, obstacles)
         elif keys[pg.K_DOWN] or keys[pg.K_s]:
             self.player.set_animation("walk_down")
-            self.player.change_destination(0, TILESIZE, self.map.obstacles)
+            response = self.player.change_destination(0, TILESIZE, obstacles)
         elif keys[pg.K_LEFT] or keys[pg.K_a]:
             self.player.set_animation("walk_left")
-            self.player.change_destination(-TILESIZE, 0, self.map.obstacles)
+            response = self.player.change_destination(-TILESIZE, 0, obstacles)
         elif keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.player.set_animation("walk_right")
-            self.player.change_destination(TILESIZE, 0, self.map.obstacles)
+            response = self.player.change_destination(TILESIZE, 0, obstacles)
+        if response:
+            return self.handle_player_collision_events(response)
+        return None
+
+    def handle_player_collision_events(self, collision_object):
+        if isinstance(collision_object, Portal):
+            #portal_seq = collision_object.get_map_change_seq(self.player, self)
+            #return ["CHANGE_STATE", "sequencer", portal_seq]
+            return self.use_portal_new(portal=collision_object)
+
+    def use_portal_new(self, portal):
+        # Get needed data
+        next_map = TiledMap(portal.name)
+        spawn_portal = self.get_portal_by_pid(portal.to_pid, map = next_map)
+        # Get "Entering" Scenes
+        portal_seq = portal.get_enter_seq(self.player)
+        fader1, fade_out_action = get_fade_action(self, is_fade_in=False)
+        portal_seq.insert_scene_action("Enter Portal", 0, fade_out_action)
+        # Add "Map Change" Scenes
+        load_map = SceneAction(
+            ExecutableMethod(self, "open_map", [portal.name]),
+            None,
+            ExecutableMethod(
+                self.player,
+                "set_position",
+                [spawn_portal.rect.x, spawn_portal.rect.y]
+                )
+            )
+        keep_fade = SceneAction(ExecutableMethod(self, "add_sprite", [fader1, ["all_sprites"]]))
+        map_change = Scene("Load Map", [load_map, keep_fade])
+        portal_seq.insert_scene(len(portal_seq.scenes), map_change)
+        # Add "Exiting" Scenes
+        exit_seq = spawn_portal.get_exit_seq(self.player)
+        end_fade = SceneAction(ExecutableMethod(fader1, "end_fade"))
+        _fader2, fade_in_action = get_fade_action(self, is_fade_in=True, include_end=True)
+        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), end_fade)
+        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), fade_in_action)
+        portal_seq.insert_scene(len(portal_seq.scenes), exit_seq)
+
+        return ["CHANGE_STATE", "sequencer", portal_seq]
+        
+    def get_portal_by_pid(self, pid, map = None):
+        if map is None:
+            map = self.map
+        for portal in map.items['portals']:
+            if portal.pid == pid:
+                return portal
+        return None
 
     def update(self):
         """Update logic for the gameplay state."""
-        for sprite in self.sprite_groups["characters"]:
+        for sprite in self.sprite_groups["all_sprites"]:
             sprite.update()
         self.map.update()
         self.camera.update(self.player.hitbox)
@@ -141,6 +188,10 @@ class GameplayState(State):
         self.draw_grid(screen)
         for sprite in self.sprite_groups["all_sprites"]:
             sprite.draw(screen, self.camera)
+
+    def add_sprite(self, sprite, groups):
+        for group in groups:
+            self.sprite_groups[group].append(sprite)
 
     def draw_grid(self, screen):
         """Draw tiles on screen."""
@@ -200,10 +251,8 @@ class GameplayState(State):
         Args:
             map_name (str): The name of the map to load.
         """
-        self.init_sprite_groups()
-        self.sprite_groups["all_sprites"].append(self.player)
-        self.sprite_groups["characters"].append(self.player)
-        self.sprite_groups["npcs"].append(self.player)
+        self.sprite_groups = self.init_sprite_groups()
+        self.add_sprite(self.player, ["all_sprites", "characters"])
         self.map = TiledMap(map_name)
         with open(DATA_DIR / "npc_data.json", encoding="utf-8") as f:
             npc_data = json.load(f)
@@ -211,15 +260,11 @@ class GameplayState(State):
         for npc_id in npc_data:
             if npc_data[npc_id]["location"]["map"] == map_name:
                 npc = NPC(npc_id)
-                self.map.obstacles.append(npc)
-                self.sprite_groups["all_sprites"].append(npc)
-                self.sprite_groups["characters"].append(npc)
-                self.sprite_groups["npcs"].append(npc)
+                self.map.items["obstacles"].append(npc)
+                self.add_sprite(npc, ["all_sprites", "characters", "npcs"])
         bunny = Animal("jackalope")
-        self.map.obstacles.append(bunny)
-        self.sprite_groups["all_sprites"].append(bunny)
-        self.sprite_groups["characters"].append(bunny)
-        self.sprite_groups["npcs"].append(bunny)
+        self.map.items["obstacles"].append(bunny)
+        self.add_sprite(bunny, ["all_sprites", "characters", "npcs"])
         self.camera.open_map(self.map)
 
     def load_data(self, data: dict, tags: list[str]) -> None:

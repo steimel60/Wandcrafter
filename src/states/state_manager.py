@@ -13,6 +13,7 @@ from states.main_menu_state import MainMenuState
 from states.gameplay_state import GameplayState
 from states.character_creation_state import CharacterCreationState
 from states.message_box_state import MessageBoxState
+from states.sequencer_state import SequencerState
 
 class StateManager:
     """Manages the game's state transitions and state-specific functions.
@@ -82,6 +83,11 @@ class StateManager:
             self.state_dict["message_box"] = MessageBoxState(
                 _tags[0],
                 self.current_state
+            )
+        if new_state == "sequencer":
+            self.state_dict["sequencer"] = SequencerState(
+                _tags[0],
+                self.state_dict["gameplay"]
             )
         if new_state in self.state_dict:
             self.current_state = new_state

@@ -16,6 +16,7 @@ from entities.entity import Entity
 from config.player_settings import WALK_SPEED
 from config.directories import SPRITES_DIR
 from entities.inventory import CharacterInventory
+from maps.portals import Portal, Door
 
 class Character(Entity):
     """Base class for character entities in the game.
@@ -41,8 +42,10 @@ class Character(Entity):
         if self.hitbox.rect == self.destination:
             self.destination.x += x
             self.destination.y += y
-        if self.destination.collidelist(obstacles) != -1:
+        if (idx := self.destination.collidelist(obstacles)) != -1:
             self.destination = self.hitbox.rect.copy()
+            return obstacles[idx]
+        return None
 
     def move(self, speed):
         """Move towards the character's target destination.
@@ -59,12 +62,16 @@ class Character(Entity):
         if self.hitbox.rect.x < self.destination.x:
             self.change_position(speed, 0)
         self.hitbox.move(self.x, self.y)
+        #if self.has_arrived():
+            #self.appearance.set_to_idle()
 
     def update(self):
         """Update the character's position and appearance."""
         super().update()
         if self.hitbox.rect != self.destination: # If moving
             self.move(self.speed)
+        else:
+            self.appearance.set_to_idle()
 
     def update_appearance(self):
         """Update the character's sprite based on their current inventory."""
@@ -82,6 +89,16 @@ class Character(Entity):
         ######### DEBUG RECTS ###########
         # Draw Destination rect
         pg.draw.rect(screen, (255,255,0), camera.apply_rect(self.destination), 2)
+
+    def set_position(self, x, y):
+        super().set_position(x, y)
+        self.destination.x, self.destination.y = x, y
+
+    def has_arrived(self) -> bool:
+        return self.destination == self.hitbox
+
+    def is_idle(self) -> bool:
+        return "idle" in self.appearance.current_anim
 
     def get_save_data(self):
         """
