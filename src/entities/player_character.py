@@ -8,6 +8,7 @@ import pygame as pg
 from entities.characters import Character
 from config.game_settings import TILESIZE
 from gui.message_box import MessageBox
+from states.gameplay.message_substate import MessageBoxSubState
 
 ##### FOR TESTS
 from items.cloak import Cloak
@@ -75,8 +76,10 @@ class PlayerCharacter(Character):
         if idx != -1:
             if hasattr(map_objects[idx], "interact"):
                 map_objects[idx].interact(game_state)
-            else: game_state.manager.change_state("message_box", [MessageBox("You can't interact with that...")])
-        else: game_state.manager.change_state("message_box", [MessageBox("There's nothing there...")])
+            else:
+                MessageBoxSubState(game_state, MessageBox("You can't interact with that...")).run()
+        else:
+            MessageBoxSubState(game_state, MessageBox("There's nothing there...")).run()
 
     def draw(self, screen: pg.Surface, camera):
         super().draw(screen, camera)

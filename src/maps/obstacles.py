@@ -2,6 +2,7 @@
 import pygame as pg
 from config.game_settings import FPS
 from gui.message_box import MessageBox
+from states.gameplay.message_substate import MessageBoxSubState
 
 class Obstacle:
     """A parent class for static map objects."""
@@ -15,7 +16,7 @@ class Obstacle:
                 f"Here's its save dict: {vars(self)}"
             ]
         )
-        game_state.manager.change_state("message_box", [box])
+        MessageBoxSubState(game_state, box).run()
 
 class AnimatedObstacle(Obstacle):
     """A parent class for objects that are animated directly in the map.

@@ -20,6 +20,7 @@ from maps.camera import Camera
 from sfx.fader import Fader, get_fade_action
 from maps.portals import Portal, Door
 from states.sequencer import Scene, Sequencer, ExecutableMethod, SceneAction
+from states.gameplay.message_substate import MessageBoxSubState
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
@@ -97,11 +98,15 @@ class GameplayState(State):
                     case pg.K_m:
                         box = MessageBox(
                             [
-                                "Congrats, you hit 'M'! This is a super duper long message just to test the capabilities of the message box state. it should wrap the text in a message box and also close when you hit space. It should now also create slides for a super long message like this one. Like you'll probaby have to hit space to have seen this.",
+                                ("Congrats, you hit 'M'! "
+                                 "This is a super duper long message just to test the capabilities of the message box state. "
+                                 "It should wrap the text in a message box and also close when you hit space. "
+                                 "It should now also create slides for a super long message like this one. "
+                                 "Like you'll probaby have to hit space to have seen this."),
                                 "Surprise! 2 Messages work (:"
                             ]
                         )
-                        self.manager.change_state("message_box", [box])
+                        MessageBoxSubState(self, box).run()
                     ################# END TEST ############
 
     def handle_continuous_player_movement(self):

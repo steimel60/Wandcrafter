@@ -7,6 +7,8 @@ updating the state, and drawing game content.
 
 This module also provides a consistent interface for all game states.
 """
+import pygame as pg
+from config.game_settings import FPS
 
 class State:
     """The `State` class is a foundational class for implementing specific
@@ -30,17 +32,38 @@ class State:
         pass  # pylint: disable=unnecessary-pass
 
 class SubState:
+    """The `SubState` class is used to run a loop with minimal logic inside of a larger State.
+    """
     def __init__(self, parent: State) -> None:
         self.parent = parent
 
-    def handle_events(self, events):
+    def handle_events(self, _events):
         """Handle events for the game state."""
-        pass  # pylint: disable=unnecessary-pass
+        raise NotImplementedError(
+            f"`handle_events` method not implemented by the class {self.__class__.__name__}. "
+            "The `handle_events` method should be defined by all subclasses of `SubState`."
+            )
 
     def update(self):
         """Update the game state."""
-        pass  # pylint: disable=unnecessary-pass
+        raise NotImplementedError(
+            f"`update` method not implemented by the class {self.__class__.__name__}. "
+            "The `update` method should be defined by all subclasses of `SubState`."
+            )
 
-    def draw(self, screen):
+    def draw(self, _screen):
         """Draw the game state."""
-        pass  # pylint: disable=unnecessary-pass
+        raise NotImplementedError(
+            f"`draw` method not implemented by the class {self.__class__.__name__}. "
+            "The `draw` method should be defined by all subclasses of `SubState`."
+            )
+
+    def run(self):
+        """Main SubState loop.
+
+        All `SubState` subclasses should contain the logic to start and stop this loop.
+        """
+        self.handle_events(pg.event.get())
+        self.update()
+        self.draw(self.parent.manager.gm.screen)
+        self.parent.manager.gm.clock.tick(FPS)

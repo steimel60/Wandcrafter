@@ -12,7 +12,6 @@ import pygame as pg
 from states.main_menu_state import MainMenuState
 from states.gameplay.gameplay_state import GameplayState
 from states.character_creation_state import CharacterCreationState
-from states.message_box_state import MessageBoxState
 from states.sequencer_state import SequencerState
 
 class StateManager:
@@ -26,13 +25,14 @@ class StateManager:
         state_dict (dict): A dictionary of game states mapped to their names.
         current_state (str): The name of the current game state.
     """
-    def __init__(self) -> None:
+    def __init__(self, game_manager) -> None:
         """Initialize the StateManager with initial game states."""
         self.state_dict = {
             'gameplay' : GameplayState(self),
             'main_menu' : MainMenuState(self),
             'character_creation' : CharacterCreationState(self),
         }
+        self.gm = game_manager
         self.current_state = 'main_menu'
 
     def handle_events(self, events):
@@ -83,12 +83,6 @@ class StateManager:
         print(f"CURRENT STATE: {self.current_state}")
         print(f"NEW STATE: {new_state}")
         print(f"TAGS: {_tags}\n")
-        if new_state == "message_box":
-            self.state_dict["message_box"] = MessageBoxState(
-                self,
-                _tags[0],
-                self.current_state
-            )
         if new_state == "sequencer":
             self.state_dict["sequencer"] = SequencerState(
                 self,

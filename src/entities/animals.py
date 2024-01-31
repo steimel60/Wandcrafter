@@ -1,5 +1,6 @@
 from entities.characters import Character
 from gui.message_box import MessageBox
+from states.gameplay.message_substate import MessageBoxSubState
 
 
 class Animal(Character):
@@ -23,18 +24,18 @@ class Animal(Character):
                 "bag" : []
             }
         }
-    
+
     def interact(self, game_state):
-        box = MessageBox(
-            [
-                f"Oh look a {self.animal}!",
-                f"Here's its save dict: {vars(self)}"
-            ]
-        )
-        game_state.manager.change_state("message_box", [box])
-        box2 = MessageBox(
-            [
-                "I wonder if I can use it's hair as a core..."
-            ]
-        )
-        game_state.manager.change_state("message_box", [box2])
+        MessageBoxSubState(
+            game_state,
+            MessageBox(
+                    [
+                        f"Oh look a {self.animal}!",
+                        f"Here's its save dict: {vars(self)}"
+                    ]
+                )
+            ).run()
+        MessageBoxSubState(
+            game_state,
+            MessageBox("I wonder if I can use it's hair as a core...")
+            ).run()

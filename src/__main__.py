@@ -30,7 +30,7 @@ class GameManager:
         self.draw_fps = True # FOR FPS DISPLAY ONLY
         pg.key.set_repeat(250,100) # Call multiple KEYDOWN events when held
         # GAME INIT
-        self.state_manager = StateManager()
+        self.state_manager = StateManager(self)
 
     def run(self):
         """Run the main game loop."""

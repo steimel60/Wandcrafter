@@ -7,6 +7,7 @@ from config.game_settings import TILESIZE
 from gui.message_box import MessageBox
 from states.sequencer import Scene, Sequencer, SceneAction, ExecutableMethod
 from sfx.fader import Fader
+from states.gameplay.message_substate import MessageBoxSubState
 
 class Portal:
     """A parent class for static map objects."""
@@ -24,7 +25,7 @@ class Portal:
                 f"It looks like it goes to {self.name}!"
             ]
         )
-        game_state.manager.change_state("message_box", [box])
+        MessageBoxSubState(game_state, box).run()
 
     def draw(self, screen, camera):
         if self.img:

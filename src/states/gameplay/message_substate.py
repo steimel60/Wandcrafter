@@ -2,6 +2,7 @@ import pygame as pg
 from states.states import State, SubState
 from gui.message_box import MessageBox
 
+
 class MessageBoxSubState(SubState):
     def __init__(self, parent: State, msg_box: MessageBox) -> None:
         super().__init__(parent)
@@ -22,7 +23,11 @@ class MessageBoxSubState(SubState):
     def draw(self, screen):
         self.parent.draw(screen)
         self.msg_box.draw(screen)
+        pg.display.flip()
 
     def update(self):
-        super().update()
         self.parent.update()
+
+    def run(self):
+        while self.running:
+            super().run()
