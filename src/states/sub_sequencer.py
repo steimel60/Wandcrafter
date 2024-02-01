@@ -1,25 +1,27 @@
-from states.states import State
+from states.states import State, SubState
+from states.sequencer import Sequencer
 
-class SequencerState(State):
+class SequencerSubState(SubState):
     """Used when transitioning between maps and such in the gameplay state.
     
     This state essentially runs all parts of the GameplayState but doesn't allow
     user input while sequences are playing.
     """
 
-    def __init__(self, manager, sequencer, gameplay_state) -> None:
-        super().__init__(manager)
+    def __init__(self, parent: State, sequencer: Sequencer) -> None:
+        super().__init__(parent)
         self.sequencer = sequencer
-        self.gameplay_state = gameplay_state
 
     def handle_events(self, _events):
-        if self.sequencer.is_finished():
-            self.manager.change_state("gameplay")
         return None
 
     def update(self):
         self.sequencer.update()
-        self.gameplay_state.update()
+        super().update()
 
     def draw(self, screen):
-        self.gameplay_state.draw(screen)
+        super().draw(screen)
+
+    def run(self):
+        while not self.sequencer.is_finished():
+            super().run()

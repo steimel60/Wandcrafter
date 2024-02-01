@@ -9,10 +9,9 @@ passing data during state transitions.
 
 import sys
 import pygame as pg
-from states.main_menu_state import MainMenuState
-from states.gameplay.gameplay_state import GameplayState
-from states.character_creation_state import CharacterCreationState
-from states.sequencer_state import SequencerState
+from states.state_main_menu import MainMenuState
+from states.state_gameplay import GameplayState
+from states.state_character_creation import CharacterCreationState
 
 class StateManager:
     """Manages the game's state transitions and state-specific functions.
@@ -79,16 +78,6 @@ class StateManager:
             new_state (str): The name of the state to transition to.
             tags (list, optional): Additional tags or labels associated with the state transition.
         """
-        print("\nSTATE CHANGE")
-        print(f"CURRENT STATE: {self.current_state}")
-        print(f"NEW STATE: {new_state}")
-        print(f"TAGS: {_tags}\n")
-        if new_state == "sequencer":
-            self.state_dict["sequencer"] = SequencerState(
-                self,
-                _tags[0],
-                self.state_dict["gameplay"]
-            )
         if new_state in self.state_dict:
             self.current_state = new_state
         else:

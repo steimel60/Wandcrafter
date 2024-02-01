@@ -8,7 +8,7 @@ import pygame as pg
 from entities.characters import Character
 from config.game_settings import TILESIZE
 from gui.message_box import MessageBox
-from states.gameplay.message_substate import MessageBoxSubState
+from states.sub_message import MessageBoxSubState
 
 ##### FOR TESTS
 from items.cloak import Cloak

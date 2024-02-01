@@ -20,7 +20,8 @@ from maps.camera import Camera
 from sfx.fader import Fader, get_fade_action
 from maps.portals import Portal, Door
 from states.sequencer import Scene, Sequencer, ExecutableMethod, SceneAction
-from states.gameplay.message_substate import MessageBoxSubState
+from states.sub_message import MessageBoxSubState
+from states.sub_sequencer import SequencerSubState
 
 ### TEST ONLLY ###
 from gui.message_box import MessageBox
@@ -135,35 +136,15 @@ class GameplayState(State):
             return self.use_portal_new(portal=collision_object)
 
     def use_portal_new(self, portal):
-        # Get needed data
-        next_map = TiledMap(portal.name)
-        spawn_portal = self.get_portal_by_pid(portal.to_pid, tile_map = next_map)
-        # Get "Entering" Scenes
-        portal_seq = portal.get_enter_seq(self.player)
-        fader1, fade_out_action = get_fade_action(self, is_fade_in=False)
-        portal_seq.insert_scene_action("Enter Portal", 0, fade_out_action)
-        # Add "Map Change" Scenes
-        load_map = SceneAction(
-            ExecutableMethod(self, "open_map", [portal.name]),
-            None,
-            ExecutableMethod(
-                self.player,
-                "set_position",
-                [spawn_portal.rect.x, spawn_portal.rect.y]
-                )
-            )
-        keep_fade = SceneAction(ExecutableMethod(self, "add_sprite", [fader1, ["all_sprites"]]))
-        map_change = Scene("Load Map", [load_map, keep_fade])
-        portal_seq.insert_scene(len(portal_seq.scenes), map_change)
-        # Add "Exiting" Scenes
-        exit_seq = spawn_portal.get_exit_seq(self.player)
-        end_fade = SceneAction(ExecutableMethod(fader1, "end_fade"))
-        _fader2, fade_in_action = get_fade_action(self, is_fade_in=True, include_end=True)
-        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), end_fade)
-        exit_seq.insert_scene_action("Exit Portal", len(exit_seq.get_scene_by_name("Exit Portal").actions), fade_in_action)
-        portal_seq.insert_scene(len(portal_seq.scenes), exit_seq)
+        # Play "Entering" Scenes
+        SequencerSubState(self, portal.get_enter_seq(self)).run()
+        # Change map and set player at corresponding portal
+        self.open_map(portal.name)
+        spawn_portal = self.get_portal_by_pid(portal.to_pid)
+        self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
+        # Play "Exit" scene
+        SequencerSubState(self, spawn_portal.get_exit_seq(self)).run()
 
-        self.manager.change_state("sequencer", [portal_seq])
 
     def get_portal_by_pid(self, pid, tile_map = None):
         if tile_map is None:

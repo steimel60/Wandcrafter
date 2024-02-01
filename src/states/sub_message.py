@@ -1,12 +1,12 @@
 import pygame as pg
-from states.states import State
+from states.states import State, SubState
 from gui.message_box import MessageBox
 
-class MessageBoxState(State):
-    def __init__(self, manager, msg_box: MessageBox, last_state: str):
-        super().__init__(manager)
+class MessageBoxSubState(SubState):
+    def __init__(self, parent: State, msg_box: MessageBox) -> None:
+        super().__init__(parent)
         self.msg_box = msg_box
-        self.last_state = last_state
+        self.running = True
 
     def handle_events(self, events):
         for event in events:
@@ -17,10 +17,15 @@ class MessageBoxState(State):
                             self.msg_box.next_tab()
                         elif self.msg_box.next_message_exists():
                             self.msg_box.next_message()
-                        else: self.manager.change_state(self.last_state)
+                        else: self.running = False
 
     def draw(self, screen):
+        self.parent.draw(screen)
         self.msg_box.draw(screen)
 
     def update(self):
-        super().update()
+        self.parent.update()
+
+    def run(self):
+        while self.running:
+            super().run()

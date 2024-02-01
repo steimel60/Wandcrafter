@@ -1,6 +1,6 @@
 from entities.characters import Character
 from gui.message_box import MessageBox
-from states.gameplay.message_substate import MessageBoxSubState
+from states.sub_message import MessageBoxSubState
 
 
 class Animal(Character):
