@@ -43,11 +43,7 @@ class StateManager:
         if pg.QUIT in (event.type for event in events):
             pg.quit()
             sys.exit()
-        response = self.state_dict[self.current_state].handle_events(events)
-        match response:
-            # case ["CHANGE_STATE", new_state, *tags]: self.change_state(new_state, tags)
-            case ["LOAD_DATA", data, *tags]: self.load_data(data, tags)
-            case _: pass
+        self.state_dict[self.current_state].handle_events(events)
 
     def update(self):
         """Update the current game state."""
@@ -61,14 +57,17 @@ class StateManager:
         """
         self.state_dict[self.current_state].draw(screen)
 
-    def load_data(self, data, tags = None):
+    def load_game(self, game):
         """Load and transition to a new game state using the provided data.
 
         Args:
-            data: The game data to load.
-            tags (list, optional): Additional tags or labels associated with the data.
+            game: The game data to load.
         """
-        self.state_dict["gameplay"].load_data(data, tags)
+        self.state_dict["gameplay"].load_game(game)
+        self.change_state("gameplay")
+    
+    def new_game(self, data):
+        self.state_dict["gameplay"].new_game(data)
         self.change_state("gameplay")
 
     def change_state(self, new_state, _tags = None):

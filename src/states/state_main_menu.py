@@ -96,5 +96,5 @@ class MainMenuState(State):
         """
         game = select_saved_game()
         if game is not None:
-            return ["LOAD_DATA", game]
+            self.manager.load_game(game)
         return None

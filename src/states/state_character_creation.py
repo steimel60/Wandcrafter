@@ -71,7 +71,7 @@ class CharacterCreationState(State):
                     case pg.K_RETURN:
                         selection = list(self.options.keys())[self.current_attr]
                         if selection == "Start Game":
-                            return ["LOAD_DATA", self.make_player(), "NEW_GAME"]
+                            self.manager.new_game(PlayerCharacter(data = self.make_player()))
                         if selection == "Back":
                             self.manager.change_state("main_menu")
             return None
@@ -117,7 +117,6 @@ class CharacterCreationState(State):
         inventory.equip(cloak)
         inventory.add_item(wand)
         data = {
-            "case" : "player",  # Tells state manager passing player data
             "name" : self.options["Name"][self.attr_idx[0]],
             "race": species,
             "sprite" : "base",

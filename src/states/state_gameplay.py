@@ -82,18 +82,15 @@ class GameplayState(State):
                 match event.key:
                     case pg.K_SPACE:
                         if self.player.is_idle():
-                            print("INTERACT EVENT")
                             items = self.map.items["obstacles"] + self.map.items["portals"]
                             return self.player.interact(items, self)
                     ########## TEST EVENTS #############
                     case pg.K_i:
                         if "idle" in self.player.appearance.current_anim:
-                            print("EQUIP EVENT")
                             self.player.inventory.equip(self.player.inventory.bag[-1])
                             self.player.update_appearance()
                     case pg.K_u:
                         if "idle" in self.player.appearance.current_anim:
-                            print("UNEQUIP EVENT")
                             self.player.inventory.unequip("Cloak")
                             self.player.update_appearance()
                     case pg.K_m:
@@ -133,33 +130,14 @@ class GameplayState(State):
 
     def handle_player_collision_events(self, collision_object):
         if isinstance(collision_object, Portal):
-            return self.use_portal_new(portal=collision_object)
-
-    def use_portal_new(self, portal):
-        # Play "Entering" Scenes
-        SequencerSubState(self, portal.get_enter_seq(self)).run()
-        # Change map and set player at corresponding portal
-        self.open_map(portal.name)
-        spawn_portal = self.get_portal_by_pid(portal.to_pid)
-        self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
-        # Play "Exit" scene
-        SequencerSubState(self, spawn_portal.get_exit_seq(self)).run()
-
-
-    def get_portal_by_pid(self, pid, tile_map = None):
-        if tile_map is None:
-            tile_map = self.map
-        for portal in tile_map.items['portals']:
-            if portal.pid == pid:
-                return portal
-        return None
+            return self.use_portal(portal=collision_object)
 
     def update(self):
-        """Update logic for the gameplay state."""
-        for sprite in self.sprite_groups["all_sprites"]:
-            sprite.update()
-        self.map.update()
-        self.camera.update(self.player.hitbox)
+            """Update logic for the gameplay state."""
+            for sprite in self.sprite_groups["all_sprites"]:
+                sprite.update()
+            self.map.update()
+            self.camera.update(self.player.hitbox)
 
     def draw(self, screen):
         """Draw the gameplay on the screen.
@@ -172,6 +150,24 @@ class GameplayState(State):
         self.draw_grid(screen)
         for sprite in self.sprite_groups["all_sprites"]:
             sprite.draw(screen, self.camera)
+
+    def use_portal(self, portal):
+        # Play "Entering" Scenes
+        SequencerSubState(self, portal.get_enter_seq(self)).run()
+        # Change map and set player at corresponding portal
+        self.open_map(portal.name)
+        spawn_portal = self.get_portal_by_pid(portal.to_pid)
+        self.player.set_position(spawn_portal.rect.x, spawn_portal.rect.y)
+        # Play "Exit" scene
+        SequencerSubState(self, spawn_portal.get_exit_seq(self)).run()
+
+    def get_portal_by_pid(self, pid, tile_map = None):
+        if tile_map is None:
+            tile_map = self.map
+        for portal in tile_map.items['portals']:
+            if portal.pid == pid:
+                return portal
+        return None
 
     def add_sprite(self, sprite, groups):
         for group in groups:
@@ -235,9 +231,15 @@ class GameplayState(State):
         Args:
             map_name (str): The name of the map to load.
         """
+        # Clear sprites
         self.sprite_groups = self.init_sprite_groups()
+        # Load player
         self.add_sprite(self.player, ["all_sprites", "characters"])
+        # Load map
         self.map = TiledMap(map_name)
+        # Resize camera
+        self.camera.open_map(self.map)
+        # Load NPCs
         with open(DATA_DIR / "npc_data.json", encoding="utf-8") as f:
             npc_data = json.load(f)
         npc_data = npc_data["npcs"]
@@ -246,43 +248,10 @@ class GameplayState(State):
                 npc = NPC(npc_id)
                 self.map.items["obstacles"].append(npc)
                 self.add_sprite(npc, ["all_sprites", "characters", "npcs"])
+        # bunny test, remove later
         bunny = Animal("jackalope")
         self.map.items["obstacles"].append(bunny)
         self.add_sprite(bunny, ["all_sprites", "characters", "npcs"])
-        self.camera.open_map(self.map)
-
-    def load_data(self, data: dict, tags: list[str]) -> None:
-        """Load game data based on tags.
-
-        Args:
-            data (dict): The game data to load. This dict should always contain
-                the key "case" indicating the type of data meant to be loaded.
-            tags (list[str]): Tags indicating how to handle the data.
-
-        Current Implemented Cases:
-        - "player": The data being passes is keyword args meant for a PlayerCharacter.
-        -"saved_game": The data being loaded is a previously saved game.
-
-        Current Implemented Tags:
-        - "NEW_GAME": Starts a new game when the data passed is a PlayerCharacter.
-
-        The method processes the provided data based on the specified tags. Each tag
-        triggers a different action or behavior within the method.
-        """
-        case = data.pop("case")
-        print(data)
-        match case:
-            case "player":
-                if "NEW_GAME" in tags:
-                    self.new_game(
-                        PlayerCharacter(data)
-                    )
-                else:
-                    self.load_player(
-                        PlayerCharacter(data)
-                    )
-            case "saved_game": self.load_game(data)
-            case _: print("Data load case not recognized.")
 
     def load_player(self, player):
         """Load a player entity.
@@ -323,7 +292,6 @@ class GameplayState(State):
     def save_game(self):
         """Save the current game data."""
         save_data = {
-            "case" : "saved_game",
             "player_data" : self.player.get_save_data(),
             "map" : self.map.name,
             "file_path" : self.file_path

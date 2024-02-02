@@ -4,15 +4,13 @@ TiledMap Module
 This module defines the `TiledMap` class, which represents a Tiled map loaded from a TMX file.
 It provides functionality to render and draw the map on a Pygame surface.
 """
-from pprint import pprint
-from maps.trees import Tree, MagicTree
-
 import pygame as pg
 import pytmx
 from config.directories import MAP_DIR
 from maps.obstacles import Obstacle, AnimatedObstacle
 from maps.animated_tiles import AnimatedTile
 from maps.portals import Portal, Door
+from maps.trees import Tree, MagicTree
 
 class TiledMap:
     """
@@ -163,8 +161,6 @@ class TiledMap:
                         properties = portal.properties,
                         img = self.tmxdata.get_tile_image_by_gid(portal.gid)
                     )
-                    print(self.tmxdata.get_tile_image_by_gid(portal.gid))
-                    print(portal.properties)
                 else:
                     raise ValueError(f"Type not recognized for object {portal} in Portals layer.")
                 portals.append(p)
