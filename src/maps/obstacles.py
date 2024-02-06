@@ -1,10 +1,11 @@
 """Obstacle Class"""
 import pygame as pg
+from items.item import Item
 from config.game_settings import FPS
 from gui.message_box import MessageBox
 from states.sub_message import MessageBoxSubState
 
-class Obstacle:
+class Obstacle(Item):
     """A parent class for static map objects."""
     def __init__(self, rect: pg.Rect):
         self.rect = rect

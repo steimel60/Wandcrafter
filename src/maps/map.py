@@ -128,6 +128,11 @@ class TiledMap:
                         item = self.create_animated_object(tile_object)
                 elif tile_object.name == "wall":
                     item = Obstacle(rect)
+                elif tile_object.name == "Tree":
+                    item = Tree(
+                            rect = rect,
+                            type="Oak"
+                        )
                 else:
                     #item = Obstacle(rect)
                     pass
@@ -185,7 +190,8 @@ class TiledMap:
         if tile_object.name == "MagicTree":
             item = MagicTree(
                     frames = self.load_animation_frames(tile_object.properties['frames']),
-                    rect = rect
+                    rect = rect,
+                    type="Oak"
                 )
         else:
             item = AnimatedObstacle(

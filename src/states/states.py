@@ -57,6 +57,7 @@ class SubState:
             parent (State): The main state that this sub-state is part of.
         """
         self.parent = parent
+        pg.event.clear() # Clear any previously logged events
 
     def handle_events(self, _events):
         """
