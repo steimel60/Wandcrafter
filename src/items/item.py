@@ -5,8 +5,20 @@ This module defines the `Item` class, which serves as the base class for items i
 Items are objects or artifacts that characters can acquire and use throughout the game.
 """
 
-# pylint: disable=R0903
-# disables "too few public methods" warning
+def action(func):
+    """Decorator to mark methods as an action and register them."""
+    if not hasattr(func, '__action__'):
+        func.__action__ = []  # Initialize once
+    func.__action__.append(func.__name__)
+    return func
+
+def quick_action(func):
+    """Decorator to mark methods as quick actions and register them."""
+    action(func)
+    if not hasattr(func, '__quick_action__'):
+        func.__quick_action__ = []  # Initialize once
+    func.__quick_action__.append(func.__name__)
+    return func
 
 class Item:
     """Base class for items in game."""
@@ -20,6 +32,14 @@ class Item:
                 data[key] = self.serialize(item)
             else: data[key] = d[key]
         return data
+    
+    def get_actions(self):
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not func.startswith("__")]
+        return [(m, getattr(self,m)) for m in methods if hasattr(getattr(self,m), "__action__")]
+    
+    def get_quick_actions(self):
+        methods = [func for func in dir(self) if callable(getattr(self, func)) and not func.startswith("__")]
+        return [(m, getattr(self,m)) for m in methods if hasattr(getattr(self,m), "__quick_action__")]
 
     def save(self) -> dict:
         data = {}

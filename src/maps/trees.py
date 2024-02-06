@@ -1,4 +1,5 @@
 from maps.obstacles import Obstacle, AnimatedObstacle
+from items.item import action, quick_action
 
 class Tree(Obstacle):
     def __init__(self, rect):
